@@ -14,7 +14,7 @@ title_separator          : "-"
 name                     : &name "Jidong Mei"
 description              : &description "INFJ|Computer Science|Machine Learning|Computer Vision|Data Science|AI|Researcher|Developer|Hacker|Geek|Nerd|Coder|Programmer|Engineer|Mathematician|Philosopher"
 url                      : https://blusque.github.io # the base hostname & protocol for your site e.g. "https://[your GitHub username].github.io"
-baseurl                  : "/academic" # the subpath of your site, e.g. "/blog"
+baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : "blusque/blusque.github.io"
 
 # Site Author - The following control what appear as part of the author content on the side bar.
