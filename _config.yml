@@ -9,12 +9,12 @@
 # Basic Site Settings
 locale                   : "cn-CN"
 site_theme               : "default"
-title                    : "Jidong Mei / Site Title"
+title                    : "Jidong Mei / Academic Portfolio"
 title_separator          : "-"
 name                     : &name "Jidong Mei"
 description              : &description "ego cotigo ergo sum"
 url                      : https://blusque.github.io # the base hostname & protocol for your site e.g. "https://[your GitHub username].github.io"
-baseurl                  : "" # the subpath of your site, e.g. "/blog"
+baseurl                  : "/academic" # the subpath of your site, e.g. "/blog"
 repository               : "blusque/blusque.github.io"
 
 # Site Author - The following control what appear as part of the author content on the side bar.
@@ -24,7 +24,7 @@ author:
   # Biographic information
   avatar           : "profile.png"
   name             : "Blusque"
-  pronouns         : # example: "she/her"  
+  pronouns         : "He/Him/他/彼/僕"  
   bio              : "Short biography for the left-hand sidebar"
   location         : "Hong Kong, China"
   employer         : "The University of Hong Kong"

@@ -14,16 +14,6 @@
     },
     "profiles": [
       {
-        "network": "Google Scholar",
-        "username": "",
-        "url": "https://scholar.google.com/citations?user=PS_CX0AAAAAJ"
-      },
-      {
-        "network": "ORCID",
-        "username": "",
-        "url": "http://orcid.org/yourorcidurl"
-      },
-      {
         "network": "GitHub",
         "username": "blusque",
         "url": "https://github.com/blusque"
@@ -51,17 +41,30 @@
       "courses": []
     },
     {
-      "institution": "GitHub University",
-      "area": "B.S. in GitHub",
+      "institution": "Beihang University",
+      "area": "B.S. in Mechanical Engineering",
       "studyType": "",
-      "startDate": "",
-      "endDate": "2012",
+      "startDate": "2019",
+      "endDate": "2023",
       "gpa": null,
       "courses": []
     }
   ],
   "skills": [],
-  "languages": [],
+  "languages": [
+    {
+      "language": "Chinese",
+      "fluency": "Native speaker"
+    },
+    {
+      "language": "English",
+      "fluency": "Conversational"
+    },
+    {
+      "language": "Japanese",
+      "fluency": "Conversational"
+    }
+  ],
   "interests": [],
   "references": [],
   "publications": [
