@@ -1,3 +1,17 @@
+---
+title: 'How to install ros in docker'
+date: 2025-05-11
+permalink: /posts/2025/05/blog-post-1/
+tags:
+  - docker
+  - ros
+  - X11
+  - VcXsrv
+---
+![Drift Result](../images/ros_in_docker/drift_result.png)
+
+This blog recorded the process of using docker to replace the normal virtual machine during installing ros.
+
 # How to install `ros-noetic` on a `Docker` container and visualize it
 
 Frankly speaking, I'm kind of tired of installing different horrible libraries and applications into my pity vulnerable ubuntu system, which is pretty dull and time-wasting, and make my little lovely linux a big big freak. Since then, it comes to me why not separate everything apart, and I finally get the point why people love containers that can separate bananas and apples apart so that the ethylene released by apples will not make bananas rot - similarly, `ros` will destory the whole environment if you do not know everything about your system well and are not careful enough. For most people in the world, including me of course, neither do we know everything in their system, nor are careful enough, so we need a external thing to help us overcome this obstacle, and `Docker` is a good choice. 
