@@ -1,7 +1,7 @@
 ---
 title: 'How to install ros in docker'
 date: 2025-05-11
-permalink: /posts/2025/05/blog-post-1/
+permalink: /ros_in_docker
 tags:
   - docker
   - ros
