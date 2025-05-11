@@ -6,7 +6,7 @@ Frankly speaking, I'm kind of tired of installing different horrible libraries a
 
 If we want to use `Docker` then we have to install it first. Since we are freshmen, the one with GUI is better.
 
-U can download `Docker Desktop` from their [homepage](https://www.docker.com/): Go to their page, click the 'Download Docker Desktop' and select the one fit your platform. Finally, You will download the installer.
+U can download `Docker Desktop` from their [homepage](https://www.docker.com/): Go to their page, click the 'Download Docker Desktop' and select the one fit your platform. The installer will start download after that.
 
 ![Docker Homepage](../images/ros_in_docker/docker_homepage.png)
 
@@ -23,13 +23,13 @@ Maybe not `4.40.0`, maybe your version is a little bit higher -- or a little bit
 
 ## Next step, pull a `ros` environment
 
-If you are a freshmen to docker, just like me, maybe you have been confused by the new nouns -- What is image? What is container? No worry! I will not mention anything about them in this tutorial, since I'm preparing for my final exam and have no time to waste.
+If you are a freshman to docker, just like me, maybe you have been confused by the new nouns -- What is image? What is container? No worry! I will not mention anything about them in this tutorial, since I'm preparing for my final exam and have no time to waste.
 
-So the next step is open the `Docker Desktop` -- and of course, sign in if it asked you, and click the big search right in the middle of the head bar, and type ros, here the result you might see.
+So the next step is open the `Docker Desktop` -- and of course, sign in if it asks you, and click the big search right in the middle of the head bar, and type ros, here's the result you might see.
 
 ![search ros](../images/ros_in_docker/select_ros.png)
 
-In the `Images` selection, select the entry circled in the red frame, change its version in the Tag to `noetic-desktop-full` because this homework is based on noetic and click `Pull` (Not `Run`) to pull this one to your local machine. If you asked me what's the difference between this one and the other `noetics`, I don't know, and I used this one because it's the biggest one, and the 'full' in its name gives me a sense of security.
+In the `Images` selection, select the entry circled in the red frame, change its version in the Tag to `noetic-desktop-full` because this homework is based on noetic and click `Pull` (Not `Run`) to pull this one to your local machine. If you ask me what's the difference between this one and the other `noetics`, I don't know, and I used this one because it's the biggest one, and the 'full' in its name gives me a sense of security.
 
 ## Side Quest, download VcXsrv to enable X11 on Windows
 
