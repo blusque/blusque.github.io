@@ -2,106 +2,214 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%225%22 fill=%22%233a5bd0%22/%3E%3C/svg%3E" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Jidong Mei</title>
-  <meta name="description" content="个人主页 · 自我介绍 / 学术 / demo / 相册 / 微电影" />
+  <title>Jidong Mei — Technical Artist</title>
+  <meta name="description" content="Jidong Mei · Technical Artist · 角色动画、Motion Matching、动作重定向与实时物理。" />
+  <meta name="theme-color" content="#08090d" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..700&family=JetBrains+Mono:wght@400&display=swap" />
   <link rel="stylesheet" href="assets/site.css" />
+  <link rel="preload" href="assets/hero/ybot.bin" as="fetch" crossorigin />
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js" } }
+  </script>
 </head>
-<body>
+<body data-paged>
+  <div class="grain" aria-hidden="true"></div>
 
-  <!-- ============ 封面 ============ -->
-  <section class="hero" id="hero">
-    <h1 class="hero__name">Jidong&nbsp;Mei</h1>
-    <nav class="home__menu" aria-label="导航">
-      <a class="home__item" href="demo.html"><span>demo</span><em>Demo</em></a>
-      <a class="home__item" href="story/index.html"><span>相册</span><em>故事</em></a>
-      <a class="home__item" href="film.html"><span>微电影</span><em>时·光</em></a>
-    </nav>
-    <div class="hero__scroll" aria-hidden="true">
-      <span class="hero__scroll-line"></span>
-      <span class="hero__scroll-text">下滑</span>
+  <!-- ============ 加载 ============ -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <pre class="loader__ascii" id="loaderBar"></pre>
+    <div class="loader__count"><span id="loaderNum">000</span></div>
+    <div class="loader__meta mono">
+      <div>Loading</div>
     </div>
-  </section>
+  </div>
 
-  <!-- ============ 顶部导航（下滑后出现） ============ -->
-  <header class="site-nav site-nav--home" id="siteNav">
-    <a class="site-nav__brand" href="#hero">Jidong Mei</a>
-    <nav class="site-nav__links">
-      <a href="demo.html">demo</a>
-      <a href="story/index.html">相册</a>
-      <a href="film.html">微电影</a>
+  <!-- ============ 导航 ============ -->
+  <header class="nav">
+    <a class="nav__brand" href="#top"><span class="nav__mark"></span>Jidong Mei</a>
+    <nav class="nav__links" aria-label="主导航">
+      <a class="link-roll" href="#about"><span>About</span><span>About</span></a>
+      <a class="link-roll" href="#research"><span>Research</span><span>Research</span></a>
+      <a class="link-roll" href="#archive"><span>Archive</span><span>Archive</span></a>
     </nav>
+    <div class="nav__aside">
+      <a class="link-roll" href="#contact"><span>Contact</span><span>Contact</span></a>
+    </div>
   </header>
 
-  <!-- ============ 自我介绍 ============ -->
-  <section class="about" id="about">
-    <div class="about__photo">
-      <!-- TODO: 放你的照片（替换掉这个占位框） -->
-      <div class="about__photo-box">照片</div>
-    </div>
-    <div class="about__body">
-      <p class="page__label">ABOUT · 关于</p>
-      <h2 class="about__title">你好，我是 Jidong Mei</h2>
-      <!-- TODO: 自我介绍 -->
-      <p class="about__text">（自我介绍待补充）</p>
-    </div>
-  </section>
+  <nav class="pager mono" id="pager" aria-label="分页"></nav>
+  <div class="gizmo" id="gizmo" aria-hidden="true"><canvas></canvas></div>
 
-  <!-- ============ 学术成果 ============ -->
-  <section class="academic" id="academic">
-    <p class="page__label">ACADEMIC · 学术</p>
-    <h2 class="page__title">学术成果</h2>
+  <main id="top">
+    <!-- ============ Hero ============ -->
+    <section class="hero" id="hero" data-page>
+      <canvas class="hero__canvas" id="heroCanvas" data-cursor="Drag" aria-label="YBot 粒子角色：拖拽旋转，轻点切换风格"></canvas>
+      <div class="hero__fallback mono">WebGL unavailable</div>
 
-    <div class="page__body">
-      <p class="lead">Jidong Mei · The University of Hong Kong</p>
+      <div class="hero__title">
+        <span class="hero__tag">Portfolio</span>
+        <h1 class="hero__name" aria-label="Jidong Mei">
+          <span class="split-line"><span>Jidong</span></span>
+          <span class="split-line"><span>Mei</span></span>
+        </h1>
+      </div>
 
-      <h2>研究方向</h2>
-      <!-- TODO: 以下由已发表论文推断，请按实际情况修改 -->
-      <p>计算机图形学 · 角色动画与人体运动生成 · 人与场景交互</p>
+      <div class="hero__hud mono">
+        <div class="hud-style">
+          <button class="hud-style__btn" id="styleBtn" type="button" data-cursor="Next">
+            <span class="faint">Style <span id="styleIdx">01/04</span></span>
+            <span class="hud-style__name" id="styleName">—</span>
+            <span aria-hidden="true">↻</span>
+          </button>
+          <span class="hud-style__bar"><i id="styleBar"></i></span>
+        </div>
+        <div class="hud-spec" id="heroSpec">
+          <span>YBot</span><span>65 Joints</span><span>GPU Skinning</span>
+        </div>
+        <a class="hud-scroll" href="#about">
+          <span>Scroll</span><span class="hud-scroll__line"></span>
+        </a>
+      </div>
+    </section>
 
-      <h2>论文 / Publications</h2>
-      <ul class="pubs">
-        <li class="pub">
-          <p class="pub__title">SIMS: Simulating Stylized Human-Scene Interactions with Retrieval-Augmented Script Generation</p>
-          <p class="pub__authors">Wenjia Wang, Liang Pan, Zhiyang Dou, <b>Jidong Mei</b>, Zhouyingcheng Liao, Yuke Lou, Yifan Wu, Lei Yang, Jingbo Wang, Taku Komura</p>
-          <p class="pub__meta">arXiv 2024 · cs.CV</p>
-          <p class="pub__links"><a href="https://arxiv.org/abs/2411.19921">arXiv:2411.19921</a></p>
-        </li>
-        <li class="pub">
-          <p class="pub__title">MotionPersona: Real-Time Locomotion Control across Personas, Bodies, and Styles</p>
+    <!-- ============ 01 About ============ -->
+    <section class="section wrap" id="about" data-page>
+      <div class="section-head mono">
+        <span class="section-head__no">(01)</span>
+        <h2 class="section-head__label split-line" data-in><span>About</span></h2>
+      </div>
+      <div class="grid">
+        <!-- TODO: 按你的真实经历改写这段自我介绍 -->
+        <p class="statement" id="statement">
+          我做角色动画里偏技术的那一半——从绑定与关键帧，到 Motion Matching、动作重定向与物理，再把这些系统做成能在引擎和浏览器里实时运行的东西。让角色动得可信，也动得好看。
+        </p>
+        <dl class="facts">
+          <div class="fact reveal"><dt class="mono">Based in</dt><dd>Hong Kong</dd></div>
+          <div class="fact reveal"><dt class="mono">Research</dt><dd>The University of Hong Kong<br /><span class="muted">Computer Graphics · Character Animation</span></dd></div>
+          <div class="fact reveal"><dt class="mono">Focus</dt><dd>Motion Matching · Retargeting<br /><span class="muted">Physics</span></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ============ 02 Projects ============ -->
+    <section class="section wrap" id="projects" data-page>
+      <div class="section-head mono">
+        <span class="section-head__no">(02)</span>
+        <h2 class="section-head__label split-line" data-in><span>Projects</span></h2>
+      </div>
+      <div class="marquee" id="marquee"><div class="marquee__track" id="workList"></div></div>
+    </section>
+
+    <!-- ============ 03 Capabilities ============ -->
+    <section class="section wrap" id="capabilities" data-page>
+      <div class="section-head mono">
+        <span class="section-head__no">(03)</span>
+        <h2 class="section-head__label split-line" data-in><span>Capabilities</span></h2>
+      </div>
+      <!-- TODO: 按实际掌握的工具增删 -->
+      <div class="caps">
+        <div class="cap reveal">
+          <h3>Character<br />Animation</h3>
+          <ul><li>绑定 · AutoRig Pro</li><li>关键帧动画</li><li>动作重定向</li><li>动捕数据清理</li></ul>
+        </div>
+        <div class="cap reveal">
+          <h3>Runtime<br />Animation</h3>
+          <ul><li>Motion Matching</li><li>姿势过渡与混合</li><li>风格化行走 · 100STYLE</li><li>异步动画生成</li></ul>
+        </div>
+        <div class="cap reveal">
+          <h3>Simulation</h3>
+          <ul><li>PBD 刚体 / 球体</li><li>接触与方向纠偏</li><li>Hermite 轨迹过渡</li><li>出手速度求解</li></ul>
+        </div>
+        <div class="cap reveal">
+          <h3>Realtime &amp;<br />Tools</h3>
+          <ul><li>C++ · WebAssembly</li><li>WebGL2 · three.js · GLSL</li><li>Blender</li><li>GPU 蒙皮 · 本页 Hero</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 04 Research ============ -->
+    <section class="section wrap" id="research" data-page>
+      <div class="section-head mono">
+        <span class="section-head__no">(04)</span>
+        <h2 class="section-head__label split-line" data-in><span>Research</span></h2>
+      </div>
+      <div class="pubs">
+        <article class="pub reveal">
+          <span class="pub__year mono">2025</span>
+          <h3 class="pub__title">MotionPersona: Real-Time Locomotion Control across Personas, Bodies, and Styles</h3>
           <p class="pub__authors">Mingyi Shi, Wei Liu, <b>Jidong Mei</b>, Wangpok Tse, Rui Chen, Xuelin Chen, Taku Komura</p>
-          <p class="pub__meta">arXiv 2025 · cs.GR</p>
-          <p class="pub__links"><a href="https://arxiv.org/abs/2506.00173">arXiv:2506.00173</a> · <a href="https://motionpersona25.github.io/">Project Page</a></p>
-        </li>
-      </ul>
+          <div class="pub__links mono">
+            <a class="ulink" href="https://motionpersona25.github.io/" target="_blank" rel="noopener">Project ↗</a>
+            <a class="ulink" href="https://arxiv.org/abs/2506.00173" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </article>
+        <article class="pub reveal">
+          <span class="pub__year mono">2024</span>
+          <h3 class="pub__title">SIMS: Simulating Stylized Human-Scene Interactions with Retrieval-Augmented Script Generation</h3>
+          <p class="pub__authors">Wenjia Wang, Liang Pan, Zhiyang Dou, <b>Jidong Mei</b>, Zhouyingcheng Liao, Yuke Lou, Yifan Wu, Lei Yang, Jingbo Wang, Taku Komura</p>
+          <div class="pub__links mono">
+            <a class="ulink" href="https://arxiv.org/abs/2411.19921" target="_blank" rel="noopener">arXiv ↗</a>
+          </div>
+        </article>
+      </div>
+    </section>
 
-      <h2>教育经历</h2>
-      <ul>
-        <li>The University of Hong Kong（待补充：学位、专业与时间）</li>
-      </ul>
+    <!-- ============ 05 Archive ============ -->
+    <section class="section wrap" id="archive" data-page>
+      <div class="section-head mono">
+        <span class="section-head__no">(05)</span>
+        <h2 class="section-head__label split-line" data-in><span>Off the Clock</span></h2>
+      </div>
+      <div class="archive">
+        <a class="tile tile--wide reveal" href="story/index.html" data-cursor="View" data-lightbox="album">
+          <img src="story/thumbs/光与影/night.jpg" alt="相册封面" loading="lazy" />
+          <div class="tile__label">
+            <h3>相册</h3>
+            <span class="mono">↗</span>
+          </div>
+        </a>
+        <a class="tile tile--tall reveal" href="film.html" data-cursor="Play" data-lightbox="film">
+          <video src="media/feet.mp4#t=8" muted loop playsinline preload="metadata"></video>
+          <div class="tile__label">
+            <h3>微电影</h3>
+            <span class="mono">↗</span>
+          </div>
+        </a>
+      </div>
+    </section>
+  </main>
 
-      <h2>链接</h2>
-      <ul>
-        <li><a href="https://github.com/blusque">GitHub</a></li>
-        <!-- TODO: Google Scholar / 个人学术主页链接 -->
-        <li>Google Scholar（待补充链接）</li>
-      </ul>
+  <!-- ============ 07 Contact ============ -->
+  <footer class="foot wrap" id="contact" data-page>
+    <div class="section-head mono">
+      <span class="section-head__no">(06)</span>
+      <h2 class="section-head__label split-line" data-in><span>Contact</span></h2>
+      
     </div>
-  </section>
-
-  <footer class="site-foot">
-    <span>© 2026 Jidong Mei</span>
-    <a href="https://github.com/blusque">GitHub</a>
+    <h2 class="foot__cta" id="cta" data-in data-cursor="Move">
+      <span class="split-line"><span>Let’s make</span></span>
+      <span class="split-line"><span class="faint">things move.</span></span>
+    </h2>
+    <div class="foot__grid">
+      <div class="foot__col">
+        <span class="mono">Elsewhere</span>
+        <a class="ulink" href="https://github.com/blusque" target="_blank" rel="noopener">GitHub ↗</a>
+        <!-- TODO: 邮箱 / Google Scholar / ArtStation / LinkedIn -->
+      </div>
+    </div>
+    <div class="foot__base mono">
+      <span>© 2026 Jidong Mei</span>
+      <a class="ulink" href="#top">Back to top ↑</a>
+    </div>
   </footer>
 
-  <script>
-    // 下滑后顶部导航出现（封面文字"拼接"到上方）
-    var nav = document.getElementById('siteNav');
-    function onScroll() {
-      nav.classList.toggle('visible', window.scrollY > window.innerHeight * 0.7);
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
+  <script src="assets/projects.js" defer></script>
+  <script src="assets/site.js" defer></script>
+  <script type="module" src="assets/home.js"></script>
 </body>
 </html>
