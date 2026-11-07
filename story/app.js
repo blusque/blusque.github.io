@@ -232,14 +232,9 @@
 
     // 先用兜底色即时渲染
     applyTone(fig, hexToRgb(photo.accent), photo.lum);
+    // 记录照片信息，交给懒加载取色（见 observePages）
+    fig._photo = photo;
     story.appendChild(fig);
-
-    // 再异步取真实主色，成功后平滑更新背景
-    extractColor(photo.src).then(function (res) {
-      if (!res) return;
-      var accent = res.accent || hexToRgb(photo.accent);
-      applyTone(fig, accent, res.lum);
-    });
 
     return fig;
   }
@@ -252,7 +247,7 @@
     var video = document.createElement('video');
     video.className = 'video__player reveal-img';
     video.controls = true;
-    video.preload = 'metadata';
+    video.preload = 'none';
     video.playsInline = true;
 
     var src = document.createElement('source');
@@ -353,6 +348,24 @@
         });
       }, { threshold: 0, rootMargin: '0px 0px -82% 0px' });
       pages.forEach(function (p) { toneIO.observe(p); });
+
+      // 懒加载取色：滚动到附近时才读取该图主色调（避免一次性加载全部大图）
+      var photoEls = Array.prototype.slice.call(document.querySelectorAll('.photo'));
+      var colorIO = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          var fig = en.target;
+          var photo = fig._photo;
+          colorIO.unobserve(fig);
+          if (!photo) return;
+          extractColor(photo.src).then(function (res) {
+            if (!res) return;
+            var accent = res.accent || hexToRgb(photo.accent);
+            applyTone(fig, accent, res.lum);
+          });
+        });
+      }, { rootMargin: '400px 0px 400px 0px' });
+      photoEls.forEach(function (p) { colorIO.observe(p); });
     } else {
       pages.forEach(function (p) { p.classList.add('in-view'); });
     }
