@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>故事 · STORY</title>
+  <meta name="description" content="一个以故事为主题的摄影作品展。每一帧，都是一个故事里的瞬间。" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="locked">
+
+  <!-- ============ 封面（上拉解锁） ============ -->
+  <div id="cover" class="cover" role="dialog" aria-label="封面">
+    <div class="cover__inner">
+      <h1 class="cover__title">故&nbsp;事</h1>
+      <p class="cover__subtitle">每一帧，都是一个故事里的瞬间</p>
+    </div>
+
+    <div class="cover__handle" id="coverHandle" tabindex="0" role="button" aria-label="向上滑动解锁">
+      <div class="cover__handle-line"></div>
+      <span class="cover__handle-text">上滑</span>
+    </div>
+
+    <div class="cover__hint" id="coverHint" aria-hidden="true">继续向上</div>
+  </div>
+
+  <!-- ============ 顶部（解锁后浮现） ============ -->
+  <header class="topbar" id="topbar">
+    <a class="topbar__word" href="../index.html">← 主页</a>
+    <nav class="topbar__chapters" id="chapterNav" aria-label="章节"></nav>
+  </header>
+
+  <!-- 顶部阅读进度条 -->
+  <div class="scroll-progress" aria-hidden="true"><span id="scrollProgressBar"></span></div>
+
+  <!-- ============ 故事主体（JS 渲染） ============ -->
+  <main id="story" class="story"></main>
+
+  <noscript>
+    <p style="padding:2rem;text-align:center;color:#888;">
+      本站需要启用 JavaScript 才能浏览照片。请开启后刷新。
+    </p>
+  </noscript>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
