@@ -36,6 +36,13 @@
   <!-- ============ 故事主体（JS 渲染） ============ -->
   <main id="story" class="story"></main>
 
+  <!-- ============ 背景音乐 ============ -->
+  <audio id="bgm" src="media/summer_will_come.mp3" loop preload="metadata"></audio>
+  <button id="musicToggle" class="music-toggle" aria-label="播放音乐" aria-pressed="false" title="Summer Will Come — PEEK">
+    <span class="music-toggle__icon" aria-hidden="true">♪</span>
+    <span class="music-toggle__track">Summer Will Come</span>
+  </button>
+
   <noscript>
     <p style="padding:2rem;text-align:center;color:#888;">
       本站需要启用 JavaScript 才能浏览照片。请开启后刷新。

@@ -15,6 +15,8 @@
   var scrollProgressBar = document.getElementById('scrollProgressBar');
   var topbar = document.getElementById('topbar');
   var coverUnlocked = false;
+  var bgm = document.getElementById('bgm');
+  var musicToggle = document.getElementById('musicToggle');
 
   /* ---------------- 颜色工具 ---------------- */
   function clamp255(v) { return Math.max(0, Math.min(255, Math.round(v))); }
@@ -470,7 +472,31 @@
     }, 30);
   }
 
+  /* ---------------- 背景音乐 ---------------- */
+  function initMusic() {
+    if (!bgm || !musicToggle) return;
+    function setPlaying(on) {
+      musicToggle.classList.toggle('playing', on);
+      musicToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      musicToggle.setAttribute('aria-label', on ? '暂停音乐' : '播放音乐');
+    }
+    musicToggle.addEventListener('click', function () {
+      if (bgm.paused) {
+        var p = bgm.play();
+        if (p && p.then) p.then(function () { setPlaying(true); }).catch(function () {});
+        else setPlaying(true);
+      } else {
+        bgm.pause();
+        setPlaying(false);
+      }
+    });
+    // 同步状态（系统中断、播放开始等）
+    bgm.addEventListener('pause', function () { setPlaying(false); });
+    bgm.addEventListener('playing', function () { setPlaying(true); });
+  }
+
   /* ---------------- 启动 ---------------- */
   build();
   initCover();
+  initMusic();
 })();
