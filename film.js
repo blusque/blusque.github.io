@@ -98,15 +98,31 @@
   });
   coverHandle.addEventListener('click', function () { if (!unlocked) unlock(); });
 
-  /* ---------------- 点击暂停/播放 + 收缩/铺开 ---------------- */
-  function setPaused(paused) { stage.classList.toggle('paused', paused); }
-
-  film.addEventListener('click', function () {
-    if (!unlocked) return;
-    if (film.paused) { film.play(); setPaused(false); }
-    else { film.pause(); setPaused(true); }
-  });
-  film.addEventListener('play', function () { setPaused(false); });
-  film.addEventListener('pause', function () { if (unlocked) setPaused(true); });
-  film.addEventListener('ended', function () { setPaused(true); });
+  /* ---------------- 点击：弹窗播放（弹窗脚本首次点击时才加载） ---------------- */
+  var FILMS = [
+    { type: 'video', src: 'media/feet.mp4', title: 'feet', sub: '时·光' }
+  ];
+  var lbReady = null;
+  function openFilm(i) {
+    if (!lbReady) {
+      lbReady = new Promise(function (res, rej) {
+        if (window.Lightbox) return res();
+        var s = document.createElement('script');
+        s.src = 'story/lightbox.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    film.pause();
+    stage.classList.add('paused');
+    lbReady.then(function () {
+      window.Lightbox.open(FILMS, i, {
+        onClose: function () {
+          stage.classList.remove('paused');
+          var p = film.play(); if (p && p.catch) p.catch(function () {});
+        }
+      });
+    });
+  }
+  film.addEventListener('click', function () { if (unlocked) openFilm(0); });
 })();
