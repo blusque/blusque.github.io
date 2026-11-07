@@ -155,7 +155,10 @@
   var photoIndex = 0;
 
   function chapterTone(chapter) {
-    // 章节引言页背景 = 本章照片主色的平均
+    // 章节引言页背景 = 本章照片主色的平均；视频章无照片，用中性深色
+    if (!chapter.photos || !chapter.photos.length) {
+      return { accent: [64, 64, 68], lum: 88 };
+    }
     var rs = 0, gs = 0, bs = 0, n = 0;
     chapter.photos.forEach(function (p) {
       var rgb = hexToRgb(p.accent);
@@ -239,6 +242,43 @@
     return fig;
   }
 
+  function renderVideo(chapter) {
+    var v = chapter.video;
+    var fig = document.createElement('figure');
+    fig.className = 'page video';
+
+    var video = document.createElement('video');
+    video.className = 'video__player reveal-img';
+    video.controls = true;
+    video.preload = 'metadata';
+    video.playsInline = true;
+
+    var src = document.createElement('source');
+    src.src = v.src;
+    src.type = 'video/mp4';
+    video.appendChild(src);
+
+    var media = document.createElement('div');
+    media.className = 'video__media';
+    media.appendChild(video);
+
+    var body = document.createElement('div');
+    body.className = 'video__body reveal';
+    var html =
+      '<span class="video__label">' + escapeHtml(chapter.no) + '</span>' +
+      '<h3 class="video__title">' + escapeHtml(v.title || '') + '</h3>';
+    if (v.caption) html += '<p class="video__caption">' + escapeHtml(v.caption) + '</p>';
+    if (v.place) html += '<p class="video__place">' + escapeHtml(v.place) + '</p>';
+    body.innerHTML = html;
+
+    fig.appendChild(media);
+    fig.appendChild(body);
+
+    applyTone(fig, [60, 60, 64], 84);
+    story.appendChild(fig);
+    return fig;
+  }
+
   function renderEnd() {
     var sec = document.createElement('section');
     sec.className = 'page end';
@@ -261,9 +301,13 @@
     DATA.chapters.forEach(function (chapter) {
       var intro = renderChapterIntro(chapter);
       pageEls.push(intro);
-      chapter.photos.forEach(function (photo) {
-        pageEls.push(renderPhoto(chapter, photo));
-      });
+      if (chapter.video) {
+        pageEls.push(renderVideo(chapter));
+      } else {
+        chapter.photos.forEach(function (photo) {
+          pageEls.push(renderPhoto(chapter, photo));
+        });
+      }
     });
     pageEls.push(renderEnd());
     observePages(pageEls);

@@ -261,6 +261,21 @@ window.GALLERY_DATA = {
           accent: "#8FA2B4", lum: 132, w: 1279, h: 1706
         }
       ]
+    },
+    {
+      id: "appendix",
+      no: "附录",
+      short: "附",
+      title: "微电影",
+      titleEn: "Short Film",
+      labelEn: "Appendix · Short Film",
+      intro: "照片定格的是一瞬，而它，把一瞬延长成了几分钟。",
+      video: {
+        src: "media/feet.mp4",
+        title: "feet",
+        caption: "（简介待补充）",
+        place: "微电影"
+      }
     }
   ],
   end: {

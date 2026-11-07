@@ -385,6 +385,68 @@ body.unlocked .story { opacity: 1; }
 }
 
 /* ============================================================
+   视频页（附录 · 微电影）
+   ============================================================ */
+.video { flex-direction: column; text-align: center; }
+
+.video__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+}
+
+.video__player {
+  display: block;
+  max-width: min(88vw, 1120px);
+  max-height: 62vh;
+  max-height: 62svh;
+  width: auto;
+  height: auto;
+  background: #000;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.video__body {
+  margin-top: 2.1rem;
+  max-width: 36em;
+}
+
+.video__label {
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.4em;
+  color: var(--ink-soft);
+}
+
+.video__title {
+  margin-top: 1rem;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  margin-left: 0.26em;
+  line-height: 1.15;
+}
+
+.video__caption {
+  margin-top: 0.9rem;
+  font-size: 0.98rem;
+  line-height: 2;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+
+.video__place {
+  margin-top: 1rem;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+
+/* ============================================================
    尾页
    ============================================================ */
 .end { flex-direction: column; text-align: center; }
@@ -486,6 +548,7 @@ body.unlocked .story { opacity: 1; }
   .photo__body { max-width: 34em; }
   .photo__title { font-size: 1.5rem; }
   .photo__story { font-size: 0.94rem; }
+  .video__player { max-height: 46vh; max-height: 46svh; }
 }
 
 @media (max-width: 720px) {
