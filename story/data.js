@@ -23,8 +23,8 @@
    故事与落款是根据文件名与色调推断的，请按真实情况校对、修改。
    ============================================================ */
 window.GALLERY_DATA = {
-  title: "故事",
-  titleEn: "STORY",
+  title: "相册",
+  titleEn: "ALBUM",
   subtitle: "每一帧，都是一个故事里的瞬间",
   chapters: [
     {
