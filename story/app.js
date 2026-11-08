@@ -153,7 +153,7 @@
   }
 
   /* ---------------- 渲染 ---------------- */
-  var totalPhotos = DATA.chapters.reduce(function (s, c) { return s + c.photos.length; }, 0);
+  var totalPhotos = DATA.chapters.reduce(function (s, c) { return s + (c.photos ? c.photos.length : 0); }, 0);
   var photoIndex = 0;
 
   function chapterTone(chapter) {
@@ -512,16 +512,20 @@
   function initLoading() {
     var loading = document.getElementById('loading');
     if (!loading) return;
-    // 页面结构已渲染完成，立即淡出（不等待图片/视频/音乐等懒加载资源）
-    requestAnimationFrame(function () {
+    // 页面结构已渲染完成，稍等一帧后淡出（用 setTimeout 保证任何环境都触发）
+    setTimeout(function () {
       loading.classList.add('done');
-      setTimeout(function () { if (loading.parentNode) loading.parentNode.removeChild(loading); }, 600);
-    });
+      setTimeout(function () { if (loading.parentNode) loading.parentNode.removeChild(loading); }, 650);
+    }, 60);
   }
 
   /* ---------------- 启动 ---------------- */
-  build();
-  initCover();
-  initMusic();
-  initLoading();
+  try {
+    build();
+    initCover();
+    initMusic();
+  } catch (e) {
+    if (window.console && console.error) console.error(e);
+  }
+  initLoading(); // 无论成败都要隐藏加载动画，避免卡住
 })();
