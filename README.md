@@ -5,8 +5,7 @@
 ## 结构
 
 ```
-├── index.html        落地页
-├── academic.html     学术
+├── index.html        主页（封面 → 自我介绍 → 学术成果）
 ├── demo.html         demo（项目）
 ├── story/            故事（摄影作品展，独立全屏页）
 ├── film.html         时·光（微电影）
@@ -30,9 +29,10 @@ python3 -m http.server 8000
 
 ## 修改内容
 
-- 名字 / 一句话介绍：改 `index.html`。
-- 生活 / 学术 / demo / 诗 的具体内容：改对应 `.html`（页面里标了 `TODO`）。
+- 名字 / 自我介绍 / 学术成果：改 `index.html`（页面里标了 `TODO`，照片和自我介绍留了占位）。
+- demo / 诗 的具体内容：改对应 `.html`（页面里标了 `TODO`）。
 - 故事的照片、分组、文案、配色：改 `story/data.js`。
+- 微电影：改 `film.html`（视频在 `media/feet.mp4`）。
 
 ## 部署（GitHub Pages）
 

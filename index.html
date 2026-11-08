@@ -4,15 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Jidong Mei</title>
-  <meta name="description" content="个人主页 · 生活 / 学术 / demo / 故事 / 诗" />
+  <meta name="description" content="个人主页 · 自我介绍 / 学术 / demo / 故事 / 时·光 / 诗" />
   <link rel="stylesheet" href="assets/site.css" />
 </head>
 <body>
-  <header class="site-nav">
-    <!-- TODO: 可替换为你惯用的名字（中文名 / 英文名） -->
-    <a class="site-nav__brand" href="index.html">Jidong Mei</a>
+
+  <!-- ============ 封面 ============ -->
+  <section class="hero" id="hero">
+    <h1 class="hero__name">Jidong&nbsp;Mei</h1>
+    <div class="hero__scroll" aria-hidden="true">
+      <span class="hero__scroll-line"></span>
+      <span class="hero__scroll-text">下滑</span>
+    </div>
+  </section>
+
+  <!-- ============ 顶部导航（下滑后出现） ============ -->
+  <header class="site-nav site-nav--home" id="siteNav">
+    <a class="site-nav__brand" href="#hero">Jidong Mei</a>
     <nav class="site-nav__links">
-      <a href="academic.html">学术</a>
       <a href="demo.html">demo</a>
       <a href="story/index.html">故事</a>
       <a href="film.html">时·光</a>
@@ -20,24 +29,75 @@
     </nav>
   </header>
 
-  <main class="home">
-    <h1 class="home__name">Jidong Mei</h1>
-    <!-- TODO: 一句话自我介绍 -->
-    <p class="home__tagline">记录 · 思考 · 创造</p>
+  <!-- ============ 自我介绍 ============ -->
+  <section class="about" id="about">
+    <div class="about__photo">
+      <!-- TODO: 放你的照片（替换掉这个占位框） -->
+      <div class="about__photo-box">照片</div>
+    </div>
+    <div class="about__body">
+      <p class="page__label">ABOUT · 关于</p>
+      <h2 class="about__title">你好，我是 Jidong Mei</h2>
+      <!-- TODO: 自我介绍 -->
+      <p class="about__text">（自我介绍待补充）</p>
+    </div>
+  </section>
 
-    <nav class="home__menu">
-      <a class="home__item" href="academic.html"><span>学术</span><em>Academic</em></a>
-      <a class="home__item" href="demo.html"><span>demo</span><em>Projects</em></a>
-      <a class="home__item" href="story/index.html"><span>故事</span><em>Story</em></a>
-      <a class="home__item" href="film.html"><span>时·光</span><em>Film</em></a>
-      <a class="home__item" href="poetry.html"><span>诗</span><em>Poetry</em></a>
-    </nav>
-  </main>
+  <!-- ============ 学术成果 ============ -->
+  <section class="academic" id="academic">
+    <p class="page__label">ACADEMIC · 学术</p>
+    <h2 class="page__title">学术成果</h2>
+
+    <div class="page__body">
+      <p class="lead">Jidong Mei · The University of Hong Kong</p>
+
+      <h2>研究方向</h2>
+      <!-- TODO: 以下由已发表论文推断，请按实际情况修改 -->
+      <p>计算机图形学 · 角色动画与人体运动生成 · 人与场景交互</p>
+
+      <h2>论文 / Publications</h2>
+      <ul class="pubs">
+        <li class="pub">
+          <p class="pub__title">SIMS: Simulating Stylized Human-Scene Interactions with Retrieval-Augmented Script Generation</p>
+          <p class="pub__authors">Wenjia Wang, Liang Pan, Zhiyang Dou, <b>Jidong Mei</b>, Zhouyingcheng Liao, Yuke Lou, Yifan Wu, Lei Yang, Jingbo Wang, Taku Komura</p>
+          <p class="pub__meta">arXiv 2024 · cs.CV</p>
+          <p class="pub__links"><a href="https://arxiv.org/abs/2411.19921">arXiv:2411.19921</a></p>
+        </li>
+        <li class="pub">
+          <p class="pub__title">MotionPersona: Real-Time Locomotion Control across Personas, Bodies, and Styles</p>
+          <p class="pub__authors">Mingyi Shi, Wei Liu, <b>Jidong Mei</b>, Wangpok Tse, Rui Chen, Xuelin Chen, Taku Komura</p>
+          <p class="pub__meta">arXiv 2025 · cs.GR</p>
+          <p class="pub__links"><a href="https://arxiv.org/abs/2506.00173">arXiv:2506.00173</a> · <a href="https://motionpersona25.github.io/">Project Page</a></p>
+        </li>
+      </ul>
+
+      <h2>教育经历</h2>
+      <ul>
+        <li>The University of Hong Kong（待补充：学位、专业与时间）</li>
+      </ul>
+
+      <h2>链接</h2>
+      <ul>
+        <li><a href="https://github.com/blusque">GitHub</a></li>
+        <!-- TODO: Google Scholar / 个人学术主页链接 -->
+        <li>Google Scholar（待补充链接）</li>
+      </ul>
+    </div>
+  </section>
 
   <footer class="site-foot">
     <span>© 2026 Jidong Mei</span>
     <a href="https://github.com/blusque">GitHub</a>
-    <!-- TODO: 邮箱 <a href="mailto:you@example.com">Email</a> -->
   </footer>
+
+  <script>
+    // 下滑后顶部导航出现（封面文字"拼接"到上方）
+    var nav = document.getElementById('siteNav');
+    function onScroll() {
+      nav.classList.toggle('visible', window.scrollY > window.innerHeight * 0.7);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  </script>
 </body>
 </html>
