@@ -21,6 +21,31 @@
    ============================================================ */
 window.PROJECTS = [
   {
+    id: "g1-locomotion",
+    title: "G1 Locomotion",
+    kind: "Motion Matching · Motion Bricks",
+    year: "",
+    summary: "自研 Motion Matching 系统 + 训练的 Motion Bricks，在 Sonic 跟踪下驱动 G1 人形机器人，网页端实时演示。",
+    cover: "demo/g1-locomotion.mp4",
+    meta: [
+      ["方向", "人形机器人运动控制"],
+      ["平台", "G1 · Web"],
+      ["组件", "Motion Matching · Motion Bricks · Sonic"],
+      ["类型", "网页端 Demo"]
+    ],
+    blocks: [
+      { type: "lead", text: "自研 Motion Matching 系统与训练的 Motion Bricks 模型，在 Sonic 跟踪下驱动 G1 人形机器人，网页端实时演示。" },
+      {
+        type: "steps", title: "系统组成",
+        items: [
+          { h: "Motion Matching 系统", p: "自研的动作匹配系统，根据目标姿态与未来轨迹实时检索并切换动作片段。" },
+          { h: "Motion Bricks", p: "训练的 Motion Bricks 模型，生成并组合运动片段。" },
+          { h: "Sonic 跟踪", p: "在 Sonic 模型的跟踪下，把生成的运动映射到 G1 人形机器人并实时执行。" }
+        ]
+      }
+    ]
+  },
+  {
     id: "motion-studio",
     title: "Motion Studio",
     kind: "Realtime · WebAssembly",
