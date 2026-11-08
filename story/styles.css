@@ -128,6 +128,21 @@ body.locked { overflow: hidden; }
 
 .cover__inner { padding: 0 1.5rem; }
 
+.cover__back {
+  position: absolute;
+  top: calc(1.4rem + env(safe-area-inset-top, 0px));
+  left: 1.5rem;
+  z-index: 10;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  color: var(--paper-soft);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.cover__back:hover { color: var(--paper-strong); }
+
 .cover__title {
   font-size: clamp(4rem, 17vw, 9rem);
   font-weight: 400;

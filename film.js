@@ -69,7 +69,7 @@
     curY = y;
     cover.style.transform = 'translateY(' + (-curY) + 'px)';
     coverHint.classList.toggle('show', curY > 24);
-    coverHint.textContent = curY > threshold() ? '松开' : '继续向上';
+    coverHint.textContent = curY > threshold() ? '松开' : '继续向下';
   }
 
   coverHandle.addEventListener('pointerdown', function (e) {
@@ -80,7 +80,7 @@
   });
   window.addEventListener('pointermove', function (e) {
     if (!dragging || unlocked) return;
-    setDrag(Math.max(0, startY - e.clientY));
+    setDrag(Math.max(0, e.clientY - startY));
   });
   function endDrag() {
     if (!dragging) return;
@@ -91,10 +91,10 @@
   }
   window.addEventListener('pointerup', endDrag);
   window.addEventListener('pointercancel', endDrag);
-  window.addEventListener('wheel', function (e) { if (!unlocked && e.deltaY < 0) unlock(); }, { passive: true });
+  window.addEventListener('wheel', function (e) { if (!unlocked && e.deltaY > 0) unlock(); }, { passive: true });
   window.addEventListener('keydown', function (e) {
     if (unlocked) return;
-    if (e.key === 'ArrowUp' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); unlock(); }
+    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); unlock(); }
   });
   coverHandle.addEventListener('click', function () { if (!unlocked) unlock(); });
 

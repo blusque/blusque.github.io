@@ -421,7 +421,7 @@
       cover.style.transform = 'translateY(' + (-curY) + 'px)';
       coverHint.classList.toggle('show', curY > 24);
       if (curY > threshold()) coverHint.textContent = '松开';
-      else coverHint.textContent = '继续向上';
+      else coverHint.textContent = '继续向下';
     }
 
     coverHandle.addEventListener('pointerdown', function (e) {
@@ -435,7 +435,7 @@
     window.addEventListener('pointermove', function (e) {
       if (!dragging || coverUnlocked) return;
       var dy = e.clientY - startY;
-      setDrag(Math.max(0, -dy));
+      setDrag(Math.max(0, dy));
     });
 
     function endDrag() {
@@ -455,12 +455,12 @@
     // 滚轮向上 / 键盘 / 点击 兜底解锁
     window.addEventListener('wheel', function (e) {
       if (coverUnlocked) return;
-      if (e.deltaY < 0) unlock();
+      if (e.deltaY > 0) unlock();
     }, { passive: true });
 
     window.addEventListener('keydown', function (e) {
       if (coverUnlocked) return;
-      if (e.key === 'ArrowUp' || e.key === ' ' || e.key === 'Enter') {
+      if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         unlock();
       }
