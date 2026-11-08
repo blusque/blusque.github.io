@@ -143,11 +143,11 @@
   /* 依据主色 + 亮度，写入每页背景与文字颜色变量 */
   function applyTone(el, accent, lum) {
     var dark = lum < 122;
-    var base = dark ? [8, 8, 10] : [246, 246, 248];
+    var base = dark ? [8, 9, 13] : [243, 244, 247];
     var tint = mixRgb(base, accent, 0.55);
     el.style.setProperty('--base', rgbToHex(base[0], base[1], base[2]));
     el.style.setProperty('--tint', rgbToHex(tint[0], tint[1], tint[2]));
-    el.style.setProperty('--ink', dark ? '#f5f5f6' : '#141416');
+    el.style.setProperty('--ink', dark ? '#e9ebf1' : '#101219');
     el.style.setProperty('--ink-soft', dark ? 'rgba(245,245,246,0.55)' : 'rgba(20,20,22,0.5)');
     el.setAttribute('data-tone', dark ? 'dark' : 'light');
   }
@@ -155,6 +155,25 @@
   /* ---------------- 渲染 ---------------- */
   var totalPhotos = DATA.chapters.reduce(function (s, c) { return s + (c.photos ? c.photos.length : 0); }, 0);
   var photoIndex = 0;
+  var LB_ITEMS = []; // 弹窗用的照片序列
+
+  /* 页面显示缩略图（thumbs/），原图只在弹窗里按需加载 */
+  function thumbOf(src) { return src.replace(/^images\//, 'thumbs/'); }
+
+  /* 弹窗脚本：第一次点击照片时才加载 */
+  var lbReady = null;
+  function openLightbox(i) {
+    if (!lbReady) {
+      lbReady = new Promise(function (res, rej) {
+        if (window.Lightbox) return res();
+        var s = document.createElement('script');
+        s.src = 'lightbox.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    lbReady.then(function () { window.Lightbox.open(LB_ITEMS, i); });
+  }
 
   function chapterTone(chapter) {
     // 章节引言页背景 = 本章照片主色的平均；视频章无照片，用中性深色
@@ -177,12 +196,12 @@
     sec.id = 'ch-' + chapter.id;
     sec.dataset.chapter = chapter.id;
 
+    var no = DATA.chapters.indexOf(chapter);
     sec.innerHTML =
-      '<p class="chapter__label reveal">' + escapeHtml(chapter.labelEn) + '</p>' +
-      '<span class="chapter__no reveal">' + escapeHtml(chapter.no) + '</span>' +
-      '<h2 class="chapter__title reveal">' + escapeHtml(chapter.title) + '</h2>' +
-      '<span class="chapter__title-en reveal">' + escapeHtml(chapter.titleEn) + '</span>' +
-      '<div class="chapter__rule reveal"></div>' +
+      '<div class="chapter__head reveal">' +
+        '<span class="chapter__no">(' + pad(no) + ')</span>' +
+        '<h2 class="chapter__title">' + capFirst(chapter.title) + '</h2>' +
+      '</div>' +
       '<p class="chapter__intro reveal">' + escapeHtml(chapter.intro) + '</p>';
 
     var tone = chapterTone(chapter);
@@ -207,7 +226,8 @@
 
     var img = document.createElement('img');
     img.className = 'photo__img reveal-img';
-    img.src = photo.src;
+    img.src = thumbOf(photo.src);
+    img.onerror = function () { img.onerror = null; img.src = photo.src; };
     img.alt = photo.title + ' — ' + photo.story;
     img.loading = 'lazy';
     img.decoding = 'async';
@@ -218,12 +238,18 @@
     media.className = 'photo__media';
     media.appendChild(img);
 
+    var lbIndex = LB_ITEMS.length;
+    LB_ITEMS.push({ type: 'image', src: photo.src, thumb: thumbOf(photo.src), title: photo.title, sub: photo.place || '', lum: photo.lum });
+    img.setAttribute('role', 'button');
+    img.tabIndex = 0;
+    img.addEventListener('click', function () { openLightbox(lbIndex); });
+    img.addEventListener('keydown', function (e) { if (e.key === 'Enter') openLightbox(lbIndex); });
+
     var body = document.createElement('div');
     body.className = 'photo__body reveal';
     body.innerHTML =
-      '<span class="photo__idx">' + pad(idx) + ' · ' + pad(totalPhotos) + '</span>' +
+      '<span class="photo__idx"><b>' + pad(idx) + '</b> / ' + pad(totalPhotos) + '</span>' +
       '<h3 class="photo__title">' + escapeHtml(photo.title) + '</h3>' +
-      '<div class="photo__rule"></div>' +
       '<p class="photo__story">' + escapeHtml(photo.story) + '</p>' +
       '<p class="photo__place">' + escapeHtml(photo.place || '') + '</p>';
 
@@ -262,7 +288,7 @@
     var body = document.createElement('div');
     body.className = 'video__body reveal';
     var html =
-      '<span class="video__label">' + escapeHtml(chapter.no) + '</span>' +
+      '<span class="video__label">Film</span>' +
       '<h3 class="video__title">' + escapeHtml(v.title || '') + '</h3>';
     if (v.caption) html += '<p class="video__caption">' + escapeHtml(v.caption) + '</p>';
     if (v.place) html += '<p class="video__place">' + escapeHtml(v.place) + '</p>';
@@ -281,12 +307,17 @@
     sec.className = 'page end';
     sec.id = 'end';
     sec.innerHTML =
-      '<p class="end__mark reveal">' + escapeHtml(DATA.end.mark) + '</p>' +
-      '<p class="end__line reveal">' + escapeHtml(DATA.end.line) + '</p>' +
-      '<button class="end__back reveal" id="backToCover">' +
-        escapeHtml(DATA.end.back) +
-        '<span class="end__back-en">' + escapeHtml(DATA.end.backEn) + '</span>' +
-      '</button>';
+      '<div class="chapter__head reveal">' +
+        '<span class="chapter__no">(Fin)</span>' +
+        '<h2 class="chapter__title"><span class="initial">T</span>he <span class="initial">E</span>nd</h2>' +
+      '</div>' +
+      '<div class="end__body reveal">' +
+        '<p class="end__line">' + escapeHtml(DATA.end.line) + '</p>' +
+        '<div class="end__actions">' +
+          '<button class="end__back" id="backToCover">' + escapeHtml(DATA.end.back) + ' <span>↑</span></button>' +
+          '<a class="end__back end__back--ghost" href="../index.html">主页 <span>→</span></a>' +
+        '</div>' +
+      '</div>';
     applyTone(sec, [10, 10, 12], 60);
     story.appendChild(sec);
     sec.querySelector('#backToCover').addEventListener('click', backToCover);
@@ -317,6 +348,11 @@
     });
   }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
+  // part 标题：首字着主题蓝
+  function capFirst(t) {
+    var a = Array.from(String(t));
+    return a.length ? '<span class="initial">' + escapeHtml(a[0]) + '</span>' + escapeHtml(a.slice(1).join('')) : '';
+  }
   function scrollToEl(el) { if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 
   /* ---------------- 视口观察：入场动画 + 章节高亮 + 进度 ---------------- */
@@ -358,7 +394,7 @@
           var photo = fig._photo;
           colorIO.unobserve(fig);
           if (!photo) return;
-          extractColor(photo.src).then(function (res) {
+          extractColor(thumbOf(photo.src)).then(function (res) {
             if (!res) return;
             var accent = res.accent || hexToRgb(photo.accent);
             applyTone(fig, accent, res.lum);

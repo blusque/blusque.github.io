@@ -2,9 +2,14 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%225%22 fill=%22%233a5bd0%22/%3E%3C/svg%3E" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>相册 · ALBUM</title>
   <meta name="description" content="一个以故事为主题的摄影作品展。每一帧，都是一个故事里的瞬间。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300..700&family=JetBrains+Mono:wght@400&display=swap" />
+  <link rel="stylesheet" href="../assets/site.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="locked">
@@ -12,9 +17,8 @@
   <!-- ============ 加载动画 ============ -->
   <div id="loading" class="loading" aria-hidden="true">
     <div class="loading__inner">
-      <span class="loading__word">相&nbsp;册</span>
+      <span class="loading__tag">Album</span>
       <span class="loading__bar"><i></i></span>
-      <span class="loading__hint">LOADING · 加载中</span>
     </div>
   </div>
 
@@ -22,13 +26,14 @@
   <div id="cover" class="cover" role="dialog" aria-label="封面">
     <a class="cover__back" href="../index.html">← 主页</a>
     <div class="cover__inner">
-      <h1 class="cover__title">相&nbsp;册</h1>
+      <span class="cover__tag">Album</span>
+      <h1 class="cover__title"><span class="initial">相</span>册</h1>
       <p class="cover__subtitle">每一帧，都是一个故事里的瞬间</p>
     </div>
 
     <div class="cover__handle" id="coverHandle" tabindex="0" role="button" aria-label="向下滑动解锁">
-      <div class="cover__handle-line"></div>
       <span class="cover__handle-text">下滑</span>
+      <div class="cover__handle-line"></div>
     </div>
 
     <div class="cover__hint" id="coverHint" aria-hidden="true">继续向下</div>
@@ -36,7 +41,7 @@
 
   <!-- ============ 顶部（解锁后浮现） ============ -->
   <header class="topbar" id="topbar">
-    <a class="topbar__word" href="../index.html">← 主页</a>
+    <a class="nav__brand" href="../index.html"><span class="nav__mark"></span>Jidong Mei</a>
     <nav class="topbar__chapters" id="chapterNav" aria-label="章节"></nav>
   </header>
 
