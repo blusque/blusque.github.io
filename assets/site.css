@@ -192,43 +192,190 @@ a { color: inherit; text-decoration: none; }
   margin-top: 1rem;
 }
 
-/* ============ demo 卡片 ============ */
-.demos {
-  margin-top: 2.6rem;
-  display: grid;
-  gap: 1rem;
+/* ============ demo 卡片页（叠放展示板） ============ */
+.demo-page {
+  max-width: none;
+  padding: 0;
 }
 
-.demo {
+.demo-cover {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 5rem 1.5rem 6rem;
+}
+
+.demo-cover__hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.34em;
+  color: var(--ink-soft);
+}
+
+.demo-cover__line {
+  width: 1px;
+  height: 2.5rem;
+  background: linear-gradient(to bottom, transparent, currentColor);
+  opacity: 0.6;
+}
+
+.demo-stage-wrap {
+  height: 160vh; /* 2 张卡 → 约 60vh 滚动完成一次切换 */
+}
+
+.demo-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.demo-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(to bottom, rgba(8, 8, 10, 0.85), transparent 24%);
+  pointer-events: none;
+}
+
+.demo-card {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(5rem + env(safe-area-inset-top, 0px)) clamp(1rem, 4vw, 4rem) 4.5rem;
+  will-change: transform, filter;
+  pointer-events: none;
+}
+
+.demo-card.is-active { pointer-events: auto; }
+
+.demo-card__video {
+  position: relative;
   display: block;
+  width: min(94vw, 980px);
+  aspect-ratio: 16 / 9;
+}
+
+.demo-card__video video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border: 1px solid var(--line);
-  padding: 1.6rem 1.8rem;
+  background: #000;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
   transition: border-color 0.35s ease;
 }
 
-.demo:hover { border-color: var(--ink); }
+.demo-card.is-active .demo-card__video video:hover { border-color: var(--ink); }
 
-.demo__tag {
+.demo-card__enter {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.8rem;
+  padding: 0.32rem 0.72rem;
   font-family: var(--sans);
-  font-size: 0.62rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.demo-card.is-active:hover .demo-card__enter { opacity: 1; }
+
+/* 底部滚动提示 */
+.demo-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  z-index: 50;
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.3em;
+  color: var(--ink-soft);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+/* ============ demo 详情页 ============ */
+.demo-detail { max-width: 1080px; }
+
+.demo-detail__player {
+  margin-top: 2.6rem;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.demo-detail__player video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.demo-detail__body {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.demo-detail__body .lead { color: var(--ink); font-size: 1.12rem; }
+
+.demo-detail__figure {
+  margin-top: 2.6rem;
+}
+
+.demo-detail__figure img {
+  width: 100%;
+  display: block;
+  border: 1px solid var(--line);
+}
+
+.demo-detail__figure figcaption {
+  margin-top: 0.7rem;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+}
+
+.demo-detail__back {
+  display: inline-block;
+  margin-top: 3rem;
+  font-family: var(--sans);
+  font-size: 0.78rem;
   letter-spacing: 0.2em;
   color: var(--ink-soft);
-  text-transform: uppercase;
+  transition: color 0.3s ease;
 }
 
-.demo h2 {
-  margin-top: 0.6rem;
-  font-size: 1.2rem;
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  color: var(--ink);
-}
-
-.demo p {
-  margin-top: 0.5rem;
-  font-size: 0.92rem;
-  color: var(--ink-soft);
-}
+.demo-detail__back:hover { color: var(--ink); }
 
 /* ============ 诗 ============ */
 .poems { margin-top: 2.6rem; }
@@ -504,6 +651,9 @@ a { color: inherit; text-decoration: none; }
   .about { flex-direction: column; gap: 2.4rem; padding-top: 3rem; }
   .about__photo { flex: none; width: min(70vw, 260px); margin: 0 auto; }
   .about__body { text-align: center; }
+
+  .demo-card { padding-top: 4.5rem; }
+  .demo-stage-wrap { height: 150vh; }
 }
 
 @media (prefers-reduced-motion: reduce) {

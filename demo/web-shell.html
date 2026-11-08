@@ -3,13 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GenoView</title>
+<title>Motion Studio · Jidong Mei</title>
 <link rel="stylesheet" href="../assets/site.css">
 <style>
   /* —— GenoView 查看器（对齐站点极简黑白风）—— */
   main.page { max-width: min(1080px, 94vw); }
 
   .viewer { margin-top: 2.4rem; }
+
+  .viewer-desc {
+    margin-top: 1.2rem;
+    font-size: 0.98rem;
+    line-height: 1.9;
+    color: var(--ink-soft);
+    max-width: 36rem;
+  }
 
   .viewer-controls {
     display: flex;
@@ -86,16 +94,22 @@
 <body>
 <header class="site-nav">
   <a class="site-nav__brand" href="../index.html">Jidong Mei</a>
-  <nav class="site-nav__links"><a href="../demo.html" class="active">demo</a></nav>
+  <nav class="site-nav__links">
+  <a href="../demo.html" class="active">demo</a>
+  <a href="../story/index.html">故事</a>
+  <a href="../film.html">时·光</a>
+  <a href="../poetry.html">诗</a>
+</nav>
 </header>
 <main class="page">
 <p class="page__label">PROJECTS · demo</p>
-<h1 class="page__title">GenoView</h1>
+<h1 class="page__title">Motion Studio</h1>
+<p class="viewer-desc">基于 Motion Matching 与篮球物理的交互式动画查看器，在浏览器中直接可玩。</p>
 <div class="viewer">
 <div class="viewer-controls">
 <label for="demo">场景</label>
 <select id="demo">
-  <option value="motion">100STYLE Motion Matching · 4 个风格</option>
+  <option value="motion">Y-Bot Motion Matching · 3 个风格</option>
   <option value="trajectory">篮球 · 落球轨迹</option>
   <option value="dribble">篮球 · 连续运球物理</option>
 </select>
@@ -116,7 +130,7 @@
   const requestedMode = url.searchParams.get('demo');
   selector.value = modes.has(requestedMode) ? requestedMode : 'motion';
   document.querySelector('#controls').textContent = selector.value === 'motion'
-    ? 'WASD 移动 · Shift 跑步 · Q/E 转向 · Tab 切换风格'
+    ? '点击画面：WASD 移动 · Shift 跑步 · Alt 侧移 · Q/E 90° · Z/C 180° · Tab 换风格 · V 展示/跟随镜头 · 右键拖动环绕 · 滚轮缩放 · R 回正 · F1 调试'
     : '空格暂停或继续 · R 重置 · Tab 切换物理步长';
   selector.addEventListener('change', () => {
     url.searchParams.set('demo', selector.value);
@@ -131,20 +145,42 @@
   canvas.addEventListener('contextmenu', event => event.preventDefault());
   var Module = {
     canvas,
-    arguments: [modes.get(selector.value)],
+    arguments: selector.value === 'motion' ? ['--ybot-mm', '--curated'] : [modes.get(selector.value)],
     preRun: [function () {
       if (selector.value !== 'motion') return;
       Module.addRunDependency('motion-assets');
       (async () => {
-        const manifest = await fetch('motion-assets.txt');
-        if (!manifest.ok) throw new Error('无法加载动作资源列表');
-        const files = (await manifest.text()).trim().split(/\r?\n/);
-        Module.FS.mkdirTree('/resources/ybot_mm');
-        for (const file of files) {
-          const response = await fetch('motion/' + encodeURIComponent(file));
-          if (!response.ok) throw new Error('无法加载 ' + file);
-          Module.FS.writeFile('/resources/ybot_mm/' + file, new Uint8Array(await response.arrayBuffer()));
+        const manifestResponse = await fetch('motion/library.json', {cache: 'no-store'});
+        if (!manifestResponse.ok) throw new Error('无法加载动作资源列表');
+        const manifest = await manifestResponse.json();
+        const compressed = typeof DecompressionStream !== 'undefined';
+        const response = await fetch('motion/' + (compressed ? manifest.gzip : manifest.raw));
+        if (!response.ok) throw new Error('无法加载动作库');
+        const reader = response.body.getReader();
+        const chunks = []; let received = 0;
+        const expected = compressed ? manifest.gzipBytes : manifest.rawBytes;
+        while (true) {
+          const {done, value} = await reader.read();
+          if (done) break;
+          chunks.push(value); received += value.length;
+          status.textContent = '正在加载动作库… ' + Math.min(100, Math.round(received / expected * 100)) + '%';
         }
+        let blob = new Blob(chunks);
+        const buffer = compressed
+          ? await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
+          : await blob.arrayBuffer();
+        const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', buffer))].map(x => x.toString(16).padStart(2, '0')).join('');
+        if (digest !== manifest.sha256) throw new Error('动作库校验失败，请刷新重试');
+        const headerSize = new DataView(buffer).getUint32(0, true);
+        const entries = JSON.parse(new TextDecoder().decode(new Uint8Array(buffer, 4, headerSize)));
+        Module.FS.mkdirTree('/resources/ybot_mm');
+        for (const entry of entries) {
+          if (entry.path.includes('..') || entry.path.startsWith('/') || entry.offset < 0 || entry.size < 0 || 4 + headerSize + entry.offset + entry.size > buffer.byteLength) throw new Error('动作库结构无效');
+          const filename = '/resources/ybot_mm/' + entry.path;
+          Module.FS.mkdirTree(filename.slice(0, filename.lastIndexOf('/')));
+          Module.FS.writeFile(filename, new Uint8Array(buffer, 4 + headerSize + entry.offset, entry.size));
+        }
+        status.textContent = '正在初始化角色与动作匹配…';
         Module.removeRunDependency('motion-assets');
       })().catch(error => Module.onAbort(error.message));
     }],

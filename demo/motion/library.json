@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "sha256": "08b09c53298990180fd5976c791f135d8bb258f686b8544f40078e5ace5a6d78",
+  "raw": "motion-08b09c532989.pack",
+  "gzip": "motion-08b09c532989.pack.gz",
+  "files": 392,
+  "assets": 195,
+  "styles": [
+    "Aeroplane",
+    "Zombie",
+    "Akimbo"
+  ],
+  "rawBytes": 31892675,
+  "gzipBytes": 18993195
+}

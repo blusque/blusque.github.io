@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Basketball 重定向 · Jidong Mei</title>
+  <link rel="stylesheet" href="../assets/site.css" />
+</head>
+<body>
+  <header class="site-nav">
+    <a class="site-nav__brand" href="../index.html">Jidong Mei</a>
+    <nav class="site-nav__links">
+      <a href="../demo.html" class="active">demo</a>
+      <a href="../story/index.html">故事</a>
+      <a href="../film.html">时·光</a>
+    </nav>
+  </header>
+
+  <main class="page demo-detail">
+    <p class="page__label">PROJECTS · demo</p>
+    <h1 class="page__title">Basketball 重定向</h1>
+
+    <div class="demo-detail__player">
+      <video controls playsinline preload="metadata">
+        <source src="basketball-retargeting.mp4" type="video/mp4" />
+      </video>
+    </div>
+
+    <div class="page__body demo-detail__body">
+      <p class="lead">将篮球动作捕捉重定向到 YBot 角色，并用物理模拟落球轨迹。</p>
+
+      <h2>解决了什么技术问题</h2>
+      <ul>
+        <li><strong>球轨迹接缝跳变</strong> — 模板衔接处篮球位置/速度会瞬间跳变。通过 18 帧五次 Hermite 衰减过渡，将 10 个模板接缝第一步的平均速度差从 <strong>1.296 m/s 降到 0</strong>，消除了球的突变。</li>
+        <li><strong>落球轨迹</strong> — 用固定子步 PBD 模拟重力与地面恢复系数，结合接触窗口的手部/球参考方向纠偏，让球贴合手部并按篮筐目标求解出手初速度。</li>
+      </ul>
+    </div>
+
+    <a class="demo-detail__back" href="../demo.html">← 返回 demo</a>
+  </main>
+
+  <footer class="site-foot">
+    <span>© 2026 Jidong Mei</span>
+    <a href="https://github.com/blusque">GitHub</a>
+  </footer>
+</body>
+</html>

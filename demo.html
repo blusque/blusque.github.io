@@ -13,47 +13,90 @@
       <a href="demo.html" class="active">demo</a>
       <a href="story/index.html">故事</a>
       <a href="film.html">时·光</a>
-      <a href="poetry.html">诗</a>
     </nav>
   </header>
 
-  <main class="page">
-    <p class="page__label">PROJECTS · demo</p>
-    <h1 class="page__title">demo</h1>
+  <main class="demo-page">
+    <section class="demo-cover">
+      <p class="page__label">PROJECTS</p>
+      <h1 class="page__title">demo</h1>
+      <div class="demo-cover__hint">
+        <span class="demo-cover__line"></span>
+        <span>滚动进入</span>
+      </div>
+    </section>
 
-    <!-- TODO: 请核对下方项目名、链接与简介，替换为你的真实项目 -->
-    <div class="demos">
-      <a class="demo" href="demo/">
-        <span class="demo__tag">Technical Art</span>
-        <h2>GenoView</h2>
-        <p>Motion Matching 与篮球物理的交互式动画查看器</p>
-      </a>
+    <div class="demo-stage-wrap">
+      <div class="demo-stage">
+        <a class="demo-card" href="demo/run-cycle.html" aria-label="Run Cycle">
+          <span class="demo-card__video">
+            <video autoplay muted loop playsinline preload="metadata">
+              <source src="demo/run-cycle.mp4" type="video/mp4" />
+            </video>
+            <span class="demo-card__enter">进入 →</span>
+          </span>
+        </a>
 
-      <a class="demo" href="https://github.com/blusque/Lava">
-        <span class="demo__tag">Game</span>
-        <h2>Lava</h2>
-        <p>一个游戏引擎（A game engine，跟随 Cherno 的教程完成）。</p>
-      </a>
+        <a class="demo-card" href="demo/motion-matching.html" aria-label="Motion Matching">
+          <span class="demo-card__video">
+            <video autoplay muted loop playsinline preload="metadata">
+              <source src="demo/motion-matching.mp4" type="video/mp4" />
+            </video>
+            <span class="demo-card__enter">进入 →</span>
+          </span>
+        </a>
 
-      <a class="demo" href="https://github.com/blusque/Musique">
-        <span class="demo__tag">App</span>
-        <h2>Musique</h2>
-        <p>（项目简介待补充）</p>
-      </a>
+        <a class="demo-card" href="demo/basketball-retargeting.html" aria-label="Basketball 重定向">
+          <span class="demo-card__video">
+            <video autoplay muted loop playsinline preload="metadata">
+              <source src="demo/basketball-retargeting.mp4" type="video/mp4" />
+            </video>
+            <span class="demo-card__enter">进入 →</span>
+          </span>
+        </a>
 
-      <a class="demo" href="https://github.com/blusque/soma">
-        <span class="demo__tag">Project</span>
-        <h2>soma</h2>
-        <p>（项目简介待补充）</p>
-      </a>
+        <span class="demo-hint">↓ 滚动切换</span>
+      </div>
     </div>
-
-    <p class="note">更多见 <a href="https://github.com/blusque">github.com/blusque</a>。每个项目复制上方一个 <code>&lt;a class="demo"&gt;</code> 块即可新增。</p>
   </main>
 
-  <footer class="site-foot">
-    <span>© 2026 Jidong Mei</span>
-    <a href="https://github.com/blusque">GitHub</a>
-  </footer>
+  <script>
+    const cards = Array.from(document.querySelectorAll('.demo-card'));
+    const wrap = document.querySelector('.demo-stage-wrap');
+    const stage = document.querySelector('.demo-stage');
+    const hint = document.querySelector('.demo-hint');
+    const N = cards.length;
+
+    // 滚动高度随卡片数自适应：1 屏封面 + 每张卡之间约 60vh 的切换滚动
+    wrap.style.height = (100 + (N - 1) * 60) + 'vh';
+
+    const GAP = 72;         // 前后卡片之间的垂直错位
+    const MAX_BLUR = 8;     // 背后卡片的模糊强度
+    const MAX_SCALE = 0.05; // 背后卡片的缩小比例
+
+    function update() {
+      const maxScroll = wrap.offsetHeight - stage.offsetHeight;
+      const p = maxScroll > 0
+        ? Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / maxScroll))
+        : 0;
+      const pos = p * (N - 1);
+
+      cards.forEach((card, i) => {
+        const offset = i - pos;              // 0 = 前面，正 = 下面，负 = 上面
+        const abs = Math.min(Math.abs(offset), 1);
+        card.style.transform =
+          `translateY(${(offset * GAP).toFixed(1)}px) scale(${(1 - abs * MAX_SCALE).toFixed(3)})`;
+        card.style.filter = `blur(${(abs * MAX_BLUR).toFixed(1)}px)`;
+        card.style.zIndex = 100 - Math.round(abs * 10);
+        card.classList.toggle('is-active', i === Math.round(pos));
+      });
+
+      if (hint) hint.style.opacity = p > 0.02 ? '0' : '1';
+    }
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  </script>
 </body>
 </html>
