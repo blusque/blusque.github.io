@@ -1,0 +1,191 @@
+/* ============================================================
+   微电影页 · 封面下拉解锁 + 主题色背景
+   ============================================================ */
+
+:root {
+  --film-base: #08080a;
+  --film-tint: #5c4a3d;   /* 兜底：视频主题色(暖棕 #B4957E)混入黑 */
+  --film-ink: #f5f5f6;
+  --film-ink-soft: rgba(245, 245, 246, 0.55);
+}
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: #08080a;
+  color: var(--film-ink);
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body.locked { overflow: hidden; }
+
+/* 主题色背景：由黑/白 + 视频主题色混合而成，做径向延展 */
+.film-stage {
+  --base: var(--film-base);
+  --tint: var(--film-tint);
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  padding: calc(4.5rem + env(safe-area-inset-top, 0px)) 1.5rem
+           calc(2rem + env(safe-area-inset-bottom, 0px));
+  background:
+    radial-gradient(90% 70% at 50% 34%, var(--tint) 0%, transparent 62%),
+    var(--base);
+  color: var(--film-ink);
+  transition: background 0.8s ease;
+}
+
+/* ============ 封面（上拉解锁） ============ */
+.cover {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 90% at 50% 36%, #1a1714 0%, #08080a 64%);
+  color: var(--film-ink);
+  text-align: center;
+  will-change: transform;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cover.dragging { transition: none; }
+.cover:not(.dragging) { transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+
+.cover.unlocked { transform: translateY(-101%); pointer-events: none; }
+
+.cover__inner { padding: 0 1.5rem; }
+
+.cover__title {
+  font-size: clamp(3rem, 12vw, 6.5rem);
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  margin-left: 0.2em;
+  line-height: 1;
+}
+
+.cover__subtitle {
+  margin-top: 2.4rem;
+  font-size: 1rem;
+  letter-spacing: 0.34em;
+  color: var(--film-ink-soft);
+}
+
+.cover__handle {
+  position: absolute;
+  bottom: calc(2.6rem + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  cursor: grab;
+  outline: none;
+}
+
+.cover__handle-line {
+  width: 1px;
+  height: 2.6rem;
+  background: linear-gradient(to bottom, transparent, rgba(245, 245, 246, 0.6));
+  animation: coverNudge 2.4s ease-in-out infinite;
+}
+
+.cover__handle-text {
+  font-size: 0.78rem;
+  letter-spacing: 0.5em;
+  margin-left: 0.5em;
+  color: var(--film-ink-soft);
+}
+
+@keyframes coverNudge {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.35; }
+}
+
+.cover__hint {
+  position: absolute;
+  bottom: calc(1.3rem + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.78rem;
+  letter-spacing: 0.4em;
+  margin-left: 0.4em;
+  color: var(--film-ink);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.cover__hint.show { opacity: 1; }
+
+/* ============ 导航（解锁后浮现） ============ */
+.film-nav {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s ease 0.2s;
+}
+body.unlocked .film-nav { opacity: 1; pointer-events: auto; }
+
+/* ============ 视频 ============ */
+.film-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.film-video {
+  display: block;
+  max-width: min(90vw, 1100px);
+  max-height: 74vh;
+  max-height: 74svh;
+  width: auto;
+  height: auto;
+  cursor: pointer;
+  background: #000;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  /* 暂停收缩 / 播放铺开 */
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.4s ease;
+}
+
+.film-stage.paused .film-video {
+  transform: scale(0.82);
+  opacity: 0.88;
+}
+
+.film-title {
+  margin-top: 0.4rem;
+  font-size: 1.3rem;
+  letter-spacing: 0.24em;
+  margin-left: 0.24em;
+}
+
+.film-hint {
+  font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--film-ink-soft);
+}
+
+@media (max-width: 720px) {
+  .film-video { max-height: 60vh; max-height: 60svh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover, .cover:not(.dragging) { transition: none; }
+  .cover__handle-line { animation: none; }
+  .film-video { transition: none; }
+}
