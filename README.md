@@ -8,11 +8,10 @@
 ├── index.html        落地页
 ├── academic.html     学术
 ├── demo.html         demo（项目）
-├── poetry.html       诗
 ├── story/            故事（摄影作品展，独立全屏页）
-│   ├── index.html
-│   ├── styles.css / data.js / app.js
-│   └── images/       （城市 / 天空 / 孩子们 / 光与影 / dices.jpg）
+├── film.html         微电影
+├── poetry.html       诗
+├── media/            微电影等媒体文件
 └── assets/
     └── site.css      主页共享样式
 ```
