@@ -6,7 +6,6 @@
 
 ```
 ├── index.html        落地页
-├── life.html         生活
 ├── academic.html     学术
 ├── demo.html         demo（项目）
 ├── poetry.html       诗

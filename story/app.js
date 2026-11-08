@@ -508,8 +508,26 @@
     bgm.addEventListener('playing', function () { setPlaying(true); });
   }
 
+  /* ---------------- 加载动画 ---------------- */
+  function initLoading() {
+    var loading = document.getElementById('loading');
+    if (!loading) return;
+    var start = Date.now();
+    function done() {
+      var wait = Math.max(0, 500 - (Date.now() - start));
+      setTimeout(function () {
+        loading.classList.add('done');
+        setTimeout(function () { if (loading.parentNode) loading.parentNode.removeChild(loading); }, 700);
+      }, wait);
+    }
+    if (document.readyState === 'complete') done();
+    else window.addEventListener('load', done);
+    setTimeout(done, 4000); // 兜底：最多 4s 后强制淡出
+  }
+
   /* ---------------- 启动 ---------------- */
   build();
   initCover();
   initMusic();
+  initLoading();
 })();
