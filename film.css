@@ -144,6 +144,11 @@ body.unlocked .film-nav { opacity: 1; pointer-events: auto; }
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: scale(1);
+  will-change: transform, opacity;
+  /* 暂停收缩 / 播放铺开 */
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.4s ease;
 }
 
 .film-video {
@@ -156,12 +161,9 @@ body.unlocked .film-nav { opacity: 1; pointer-events: auto; }
   cursor: pointer;
   background: #000;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-  /* 暂停收缩 / 播放铺开 */
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-              opacity 0.4s ease;
 }
 
-.film-stage.paused .film-video {
+.film-stage.paused .film-frame {
   transform: scale(0.82);
   opacity: 0.88;
 }
@@ -187,5 +189,5 @@ body.unlocked .film-nav { opacity: 1; pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) {
   .cover, .cover:not(.dragging) { transition: none; }
   .cover__handle-line { animation: none; }
-  .film-video { transition: none; }
+  .film-frame { transition: none; }
 }
