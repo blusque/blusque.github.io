@@ -512,17 +512,11 @@
   function initLoading() {
     var loading = document.getElementById('loading');
     if (!loading) return;
-    var start = Date.now();
-    function done() {
-      var wait = Math.max(0, 500 - (Date.now() - start));
-      setTimeout(function () {
-        loading.classList.add('done');
-        setTimeout(function () { if (loading.parentNode) loading.parentNode.removeChild(loading); }, 700);
-      }, wait);
-    }
-    if (document.readyState === 'complete') done();
-    else window.addEventListener('load', done);
-    setTimeout(done, 4000); // 兜底：最多 4s 后强制淡出
+    // 页面结构已渲染完成，立即淡出（不等待图片/视频/音乐等懒加载资源）
+    requestAnimationFrame(function () {
+      loading.classList.add('done');
+      setTimeout(function () { if (loading.parentNode) loading.parentNode.removeChild(loading); }, 600);
+    });
   }
 
   /* ---------------- 启动 ---------------- */
