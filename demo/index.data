@@ -1,0 +1,551 @@
+#version 300 es
+precision highp float;
+
+in vec3 fragPosition;
+in vec2 fragTexCoord;
+in vec4 fragColor;
+in vec3 fragNormal;
+
+uniform vec4 colDiffuse;
+uniform float specularity;
+uniform int solidSurface;
+uniform float glossiness;
+uniform float camClipNear;
+uniform float camClipFar;
+
+layout (location = 0) out vec4 gbufferColor;
+layout (location = 1) out vec4 gbufferNormal;
+
+float Grid(in vec2 uv, in float lineWidth)
+{
+    vec4 uvDDXY = vec4(dFdx(uv), dFdy(uv));
+    vec2 uvDeriv = vec2(length(uvDDXY.xz), length(uvDDXY.yw));
+    float targetWidth = lineWidth > 0.5 ? 1.0 - lineWidth : lineWidth;
+    vec2 drawWidth = clamp(
+        vec2(targetWidth, targetWidth), uvDeriv, vec2(0.5, 0.5));
+    vec2 lineAA = uvDeriv * 1.5;
+    vec2 gridUV = abs(fract(uv) * 2.0 - 1.0);
+    gridUV = lineWidth > 0.5 ? gridUV : 1.0 - gridUV;
+    vec2 g2 = smoothstep(drawWidth + lineAA, drawWidth - lineAA, gridUV);
+    g2 *= clamp(targetWidth / drawWidth, 0.0, 1.0);
+    g2 = mix(g2, vec2(targetWidth, targetWidth),
+        clamp(uvDeriv * 2.0 - 1.0, 0.0, 1.0));
+    g2 = lineWidth > 0.5 ? 1.0 - g2 : g2;
+    return mix(g2.x, 1.0, g2.y);
+}
+
+float Checker(in vec2 uv)
+{
+    vec4 uvDDXY = vec4(dFdx(uv), dFdy(uv));
+    vec2 w = max(vec2(length(uvDDXY.xz), length(uvDDXY.yw)), vec2(0.00001));
+    vec2 i = 2.0*(abs(fract((uv-0.5*w)*0.5)-0.5)-
+                  abs(fract((uv+0.5*w)*0.5)-0.5))/w;
+    return 0.5 - 0.5*i.x*i.y;
+}
+
+vec3 FromGamma(in vec3 col)
+{
+    return vec3(pow(col.x, 1.0/2.2), pow(col.y, 1.0/2.2), pow(col.z, 1.0/2.2));
+}
+
+float LinearDepth(float depth, float near, float far)
+{
+    return (2.0 * near) / (far + near - depth * (far - near));
+}
+
+void main()
+{
+    if (solidSurface != 0)
+    {
+        gbufferColor = vec4(FromGamma(fragColor.xyz * colDiffuse.xyz), specularity);
+        gbufferNormal = vec4(normalize(fragNormal) * 0.5 + 0.5, glossiness / 100.0);
+        gl_FragDepth = LinearDepth(gl_FragCoord.z, camClipNear, camClipFar);
+        return;
+    }
+    float gridFine = Grid(20.0 * 10.0 * fragTexCoord, 0.025);
+    float gridCoarse = Grid(2.0 * 10.0 * fragTexCoord, 0.02);
+    float check = Checker(2.0 * 10.0 * fragTexCoord);
+
+    vec3 albedo = FromGamma(fragColor.xyz * colDiffuse.xyz) * mix(mix(mix(0.9, 0.95, check), 0.85, gridFine), 1.0, gridCoarse);
+    float spec = specularity * mix(mix(0.5, 0.75, check), 1.0, gridCoarse);
+    
+    gbufferColor = vec4(albedo, spec);
+    gbufferNormal = vec4(fragNormal * 0.5f + 0.5f, glossiness / 100.0f);
+    gl_FragDepth = LinearDepth(gl_FragCoord.z, camClipNear, camClipFar);
+}
+
+#version 300 es
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec3 vertexNormal;
+in vec4 vertexColor;
+
+uniform mat4 mvp;
+
+out vec3 fragPosition;
+out vec2 fragTexCoord;
+out vec4 fragColor;
+out vec3 fragNormal;
+
+void main()
+{
+    fragPosition = vertexPosition;
+    fragTexCoord = vertexTexCoord;
+    fragColor = vertexColor;
+    fragNormal = vertexNormal;
+
+    gl_Position = mvp * vec4(fragPosition, 1.0f);
+}
+#version 300 es
+precision highp float;
+
+in vec2 fragTexCoord;
+
+uniform sampler2D gbufferNormal;
+uniform sampler2D gbufferDepth;
+uniform sampler2D inputTexture;
+uniform mat4 camInvProj;
+uniform float camClipNear;
+uniform float camClipFar;
+uniform vec2 invTextureResolution;
+uniform vec2 blurDirection;
+
+float NonlinearDepth(float depth, float near, float far)
+{
+    return (((2.0 * near) / depth) - far - near) / (near - far);
+}
+
+vec3 CameraSpace(vec2 texcoord, float depth)
+{
+    vec4 positionClip = vec4(vec3(texcoord, NonlinearDepth(depth, camClipNear, camClipFar)) * 2.0 - 1.0, 1.0);
+    vec4 position = camInvProj * positionClip;
+    return position.xyz / position.w;
+}
+
+float FastNegExp(float x)
+{
+    return 1.0f / (1.0f + x + 0.48f*x*x + 0.235f*x*x*x);
+}
+
+out vec4 finalColor;
+
+void main()
+{
+    float depth = texture(gbufferDepth, fragTexCoord).r;
+    if (depth == 1.0f) { discard; }
+
+    vec3 baseNormal = texture(gbufferNormal, fragTexCoord).rgb * 2.0f - 1.0f;
+    vec3 basePosition = CameraSpace(fragTexCoord, depth);
+    
+    vec4 totalColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+    float totalWeight = 0.0f;
+    float stride = 2.0f;
+    
+    for (int x = -3; x <= 3; x++)
+    {
+        vec2 sampleTexcoord = fragTexCoord + float(x) * stride * blurDirection * invTextureResolution;
+        vec4 sampleColour = texture(inputTexture, sampleTexcoord);
+        vec3 sampleNormal = texture(gbufferNormal, sampleTexcoord).rgb * 2.0f - 1.0f;
+        vec3 samplePosition = CameraSpace(sampleTexcoord, texture(gbufferDepth, sampleTexcoord).r);
+        
+        vec3 diffPosition = (samplePosition - basePosition) / 0.05f;
+
+        float weightPosition = FastNegExp(dot(diffPosition, diffPosition));
+        float weightNormal = max(dot(sampleNormal, baseNormal), 0.0f);
+
+        float weight = weightPosition * weightNormal;
+
+        totalColor += weight * sampleColour;
+        totalWeight += weight;
+    }
+    
+    finalColor = totalColor / totalWeight;    
+    
+    //finalColor = texture(inputTexture, fragTexCoord);
+}
+#version 300 es
+precision highp float;
+
+in vec2 fragTexCoord;
+
+uniform sampler2D inputTexture;
+uniform vec2 invTextureResolution;
+
+out vec4 finalColor;
+
+void main()
+{
+    const float spanMax = 4.0;
+    const float reduceAmount = 1.0 / 4.0;
+    const float reduceMin = (1.0 / 64.0);
+
+    vec3 luma = vec3(0.299, 0.587, 0.114);
+    float lumaNW = dot(texture(inputTexture, fragTexCoord + (vec2(-1.0, -1.0) * invTextureResolution)).rgb, luma);
+    float lumaNE = dot(texture(inputTexture, fragTexCoord + (vec2( 1.0, -1.0) * invTextureResolution)).rgb, luma);
+    float lumaSW = dot(texture(inputTexture, fragTexCoord + (vec2(-1.0,  1.0) * invTextureResolution)).rgb, luma);
+    float lumaSE = dot(texture(inputTexture, fragTexCoord + (vec2( 1.0,  1.0) * invTextureResolution)).rgb, luma);
+    float lumaMI = dot(texture(inputTexture, fragTexCoord).rgb, luma);
+
+    float lumaMin = min(lumaMI, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
+    float lumaMax = max(lumaMI, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
+
+    vec2 dir = vec2(
+        -((lumaNW + lumaNE) - (lumaSW + lumaSE)),
+        +((lumaNW + lumaSW) - (lumaNE + lumaSE)));
+
+    float dirReduce = max((lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * reduceAmount), reduceMin);
+    float dirRcpMin = 1.0/(min(abs(dir.x), abs(dir.y)) + dirReduce);
+
+    dir = min(vec2(spanMax,  spanMax), max(vec2(-spanMax, -spanMax), dir * dirRcpMin)) * invTextureResolution;
+
+    vec3 rgba0 = texture(inputTexture, fragTexCoord + dir * (1.0 / 3.0 - 0.5)).rgb;
+    vec3 rgba1 = texture(inputTexture, fragTexCoord + dir * (2.0 / 3.0 - 0.5)).rgb;
+    vec3 rgba2 = texture(inputTexture, fragTexCoord + dir * (0.0 / 3.0 - 0.5)).rgb;
+    vec3 rgba3 = texture(inputTexture, fragTexCoord + dir * (3.0 / 3.0 - 0.5)).rgb;
+
+    vec3 rgbA = (1.0/ 2.0) * (rgba0 + rgba1);
+    vec3 rgbB = rgbA * (1.0/ 2.0) + (1.0/ 4.0) * (rgba2 + rgba3);
+
+    float lumaB = dot(rgbB, luma);
+    
+    finalColor.rgb = (lumaB < lumaMin) || (lumaB > lumaMax) ? rgbA : rgbB;
+}
+#version 300 es
+precision highp float;
+
+in vec2 fragTexCoord;
+
+uniform sampler2D gbufferColor;
+uniform sampler2D gbufferNormal;
+uniform sampler2D gbufferDepth;
+uniform sampler2D ssao;
+
+uniform vec3 camPos;
+uniform mat4 camInvViewProj;
+uniform vec3 lightDir;
+uniform vec3 sunColor;
+uniform float sunStrength;
+uniform vec3 skyColor;
+uniform float skyStrength;
+uniform float groundStrength;
+uniform float ambientStrength;
+uniform float exposure;
+uniform float camClipNear;
+uniform float camClipFar;
+
+out vec4 finalColor;
+
+#define PI 3.14159265358979323846264338327950288
+
+vec3 ToGamma(in vec3 col)
+{
+    return vec3(pow(col.x, 2.2), pow(col.y, 2.2), pow(col.z, 2.2));
+}
+
+vec3 FromGamma(in vec3 col)
+{
+    return vec3(pow(col.x, 1.0/2.2), pow(col.y, 1.0/2.2), pow(col.z, 1.0/2.2));
+}
+
+float LinearDepth(float depth, float near, float far)
+{
+    return (2.0 * near) / (far + near - depth * (far - near));
+}
+
+float NonlinearDepth(float depth, float near, float far)
+{
+    return (((2.0 * near) / depth) - far - near) / (near - far);
+}
+
+void main()
+{
+    // Unpack GBuffer
+    
+    float depth = texture(gbufferDepth, fragTexCoord).r;
+    if (depth == 1.0f) { discard; }
+
+    vec4 colorAndSpec = texture(gbufferColor, fragTexCoord);
+    vec4 normalAndGlossiness = texture(gbufferNormal, fragTexCoord);
+    vec3 positionClip = vec3(fragTexCoord, NonlinearDepth(depth, camClipNear, camClipFar)) * 2.0f - 1.0f;
+    vec4 fragPositionHomo = camInvViewProj * vec4(positionClip, 1);
+    vec3 fragPosition = fragPositionHomo.xyz / fragPositionHomo.w;
+    vec4 ssaoData = texture(ssao, fragTexCoord);
+    vec3 fragNormal = normalAndGlossiness.xyz * 2.0f - 1.0f;
+    vec3 albedo = colorAndSpec.xyz;
+    float specularity = colorAndSpec.w;
+    float glossiness = normalAndGlossiness.w * 100.0f;
+    float sunShadow = ssaoData.g;
+    float ambientShadow = ssaoData.r;
+    
+    // Compute lighting
+    
+    vec3 eyeDir = normalize(fragPosition - camPos);
+
+    vec3 lightSunColor = FromGamma(sunColor);
+    vec3 lightSunHalf = normalize(-lightDir - eyeDir);
+
+    vec3 lightSkyColor = FromGamma(skyColor);
+    vec3 skyDir = vec3(0.0, -1.0, 0.0);
+    vec3 lightSkyHalf = normalize(-skyDir - eyeDir);
+
+    float sunFactorDiff = max(dot(fragNormal, -lightDir), 0.0);
+    float sunFactorSpec = specularity *
+        ((glossiness+2.0) / (8.0 * PI)) *
+        pow(max(dot(fragNormal, lightSunHalf), 0.0), glossiness);
+
+    float skyFactorDiff = max(dot(fragNormal, -skyDir), 0.0);
+    float skyFactorSpec = specularity *
+        ((glossiness+2.0) / (8.0 * PI)) *
+        pow(max(dot(fragNormal, lightSkyHalf), 0.0), glossiness);
+
+    float groundFactorDiff = max(dot(fragNormal, skyDir), 0.0);
+    
+    // Combine
+    
+    vec3 ambient = ambientShadow * ambientStrength * lightSkyColor * albedo;
+
+    vec3 diffuse = sunShadow * sunStrength * lightSunColor * albedo * sunFactorDiff +
+        groundStrength * lightSkyColor * albedo * groundFactorDiff +
+        skyStrength * lightSkyColor * albedo * skyFactorDiff;
+
+    float specular = sunShadow * sunStrength * sunFactorSpec + skyStrength * skyFactorSpec;
+
+    vec3 final = diffuse + ambient + specular;
+    
+    finalColor = vec4(ToGamma(exposure * final), 1.0f);
+    //finalColor = vec4(ToGamma(vec3(ambientShadow, ambientShadow, ambientShadow)), 1.0f);
+    //finalColor = vec4(ToGamma(vec3(sunShadow, sunShadow, sunShadow)), 1.0f);
+    //finalColor = vec4(ToGamma(vec3(specular, specular, specular)), 1.0f);
+    gl_FragDepth = NonlinearDepth(depth, camClipNear, camClipFar);
+}
+
+#version 300 es
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+
+uniform mat4 mvp;
+
+out vec2 fragTexCoord;
+
+void main()
+{
+    fragTexCoord = vertexTexCoord;
+    gl_Position = mvp * vec4(vertexPosition, 1.0f);
+}
+#version 300 es
+precision highp float;
+
+uniform float lightClipNear;
+uniform float lightClipFar;
+
+float LinearDepth(float depth, float near, float far)
+{
+    return (2.0 * near) / (far + near - depth * (far - near));
+}
+
+void main()
+{
+    gl_FragDepth = LinearDepth(gl_FragCoord.z, lightClipNear, lightClipFar);
+}
+#version 300 es
+
+in vec3 vertexPosition;
+
+uniform mat4 mvp;
+
+void main()
+{
+    gl_Position = mvp * vec4(vertexPosition, 1.0f);
+}
+#version 300 es
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec3 vertexNormal;
+in vec4 vertexColor;
+in vec4 vertexBoneIds;
+in vec4 vertexBoneWeights;
+
+#define MAX_BONE_NUM 128
+uniform mat4 boneMatrices[MAX_BONE_NUM];
+
+uniform mat4 mvp;
+
+out vec3 fragPosition;
+out vec2 fragTexCoord;
+out vec4 fragColor;
+out vec3 fragNormal;
+
+void main()
+{
+    int boneIndex0 = int(vertexBoneIds.x);
+    int boneIndex1 = int(vertexBoneIds.y);
+    int boneIndex2 = int(vertexBoneIds.z);
+    int boneIndex3 = int(vertexBoneIds.w);
+    
+    vec4 skinnedPosition =
+        vertexBoneWeights.x * (boneMatrices[boneIndex0] * vec4(vertexPosition, 1.0f)) +
+        vertexBoneWeights.y * (boneMatrices[boneIndex1] * vec4(vertexPosition, 1.0f)) + 
+        vertexBoneWeights.z * (boneMatrices[boneIndex2] * vec4(vertexPosition, 1.0f)) + 
+        vertexBoneWeights.w * (boneMatrices[boneIndex3] * vec4(vertexPosition, 1.0f));
+    
+    vec3 skinnedNormal = normalize(
+        vertexBoneWeights.x * (mat3(boneMatrices[boneIndex0]) * vertexNormal) +
+        vertexBoneWeights.y * (mat3(boneMatrices[boneIndex1]) * vertexNormal) +
+        vertexBoneWeights.z * (mat3(boneMatrices[boneIndex2]) * vertexNormal) +
+        vertexBoneWeights.w * (mat3(boneMatrices[boneIndex3]) * vertexNormal));
+
+    fragPosition = skinnedPosition.xyz / skinnedPosition.w;
+    fragTexCoord = vertexTexCoord;
+    fragColor = vertexColor;
+    fragNormal = skinnedNormal;
+
+    gl_Position = mvp * vec4(fragPosition, 1.0f);
+}
+#version 300 es
+
+in vec3 vertexPosition;
+in vec4 vertexBoneIds;
+in vec4 vertexBoneWeights;
+
+#define MAX_BONE_NUM 128
+uniform mat4 boneMatrices[MAX_BONE_NUM];
+
+uniform mat4 mvp;
+
+void main()
+{
+    int boneIndex0 = int(vertexBoneIds.x);
+    int boneIndex1 = int(vertexBoneIds.y);
+    int boneIndex2 = int(vertexBoneIds.z);
+    int boneIndex3 = int(vertexBoneIds.w);
+    
+    vec4 skinnedPosition =
+        vertexBoneWeights.x * (boneMatrices[boneIndex0] * vec4(vertexPosition, 1.0f)) +
+        vertexBoneWeights.y * (boneMatrices[boneIndex1] * vec4(vertexPosition, 1.0f)) + 
+        vertexBoneWeights.z * (boneMatrices[boneIndex2] * vec4(vertexPosition, 1.0f)) + 
+        vertexBoneWeights.w * (boneMatrices[boneIndex3] * vec4(vertexPosition, 1.0f));
+    
+    gl_Position = mvp * vec4(skinnedPosition.xyz / skinnedPosition.w, 1.0f);
+}
+#version 300 es
+precision highp float;
+
+#define PI 3.14159265358979323846264338327950288
+#define SSAO_SAMPLE_NUM 9
+
+in vec2 fragTexCoord;
+
+uniform sampler2D gbufferNormal;
+uniform sampler2D gbufferDepth;
+uniform mat4 camView;
+uniform mat4 camProj;
+uniform mat4 camInvProj;
+uniform mat4 camInvViewProj;
+uniform mat4 lightViewProj;
+uniform sampler2D shadowMap;
+uniform vec2 shadowInvResolution;
+uniform float camClipNear;
+uniform float camClipFar;
+uniform float lightClipNear;
+uniform float lightClipFar;
+uniform vec3 lightDir;
+
+float LinearDepth(float depth, float near, float far)
+{
+    return (2.0 * near) / (far + near - depth * (far - near));
+}
+
+float NonlinearDepth(float depth, float near, float far)
+{
+    return (((2.0 * near) / depth) - far - near) / (near - far);
+}
+
+vec3 CameraSpace(vec2 texcoord, float depth)
+{
+    vec4 positionClip = vec4(vec3(texcoord, NonlinearDepth(depth, camClipNear, camClipFar)) * 2.0 - 1.0, 1.0);
+    vec4 position = camInvProj * positionClip;
+    return position.xyz / position.w;
+}
+
+vec3 Rand(vec2 seed)
+{
+    return 2.0 * fract(sin(dot(seed, vec2(12.9898, 78.233))) * vec3(43758.5453, 21383.21227, 20431.20563)) - 1.0;
+}
+
+vec2 Spiral(int sampleIndex, float turns, float seed)
+{
+	float alpha = (float(sampleIndex) + 0.5) / float(SSAO_SAMPLE_NUM);
+	float angle = alpha * (turns * 2.0 * PI) + 2.0 * PI * seed;
+	return alpha * vec2(cos(angle), sin(angle));
+}
+
+out vec4 finalColor;
+
+void main()
+{
+    // Compute Shadows
+    
+    float depth = texture(gbufferDepth, fragTexCoord).r;
+    if (depth == 1.0f) { discard; }
+
+    vec3 positionClip = vec3(fragTexCoord, NonlinearDepth(depth, camClipNear, camClipFar)) * 2.0f - 1.0f;
+    vec4 fragPositionHomo = camInvViewProj * vec4(positionClip, 1);
+    vec3 fragPosition = fragPositionHomo.xyz / fragPositionHomo.w;
+    vec3 fragNormal = texture(gbufferNormal, fragTexCoord).xyz * 2.0 - 1.0;
+    
+    vec3 seed = Rand(fragTexCoord);
+    
+    float shadowNormalBias = 0.01;
+    
+    vec4 fragPosLightSpace = lightViewProj * vec4(fragPosition + shadowNormalBias * fragNormal, 1);
+    fragPosLightSpace.xyz /= fragPosLightSpace.w;
+    fragPosLightSpace.xyz = (fragPosLightSpace.xyz + 1.0f) / 2.0f;
+    
+    float shadowDepthBias = 0.000005;
+    float shadowClip = float(
+        fragPosLightSpace.x < +1.0 &&
+        fragPosLightSpace.x >  0.0 &&
+        fragPosLightSpace.y < +1.0 &&
+        fragPosLightSpace.y >  0.0);
+        
+    float shadow = 1.0 - shadowClip * float(
+        LinearDepth(fragPosLightSpace.z, lightClipNear, lightClipFar) - shadowDepthBias > 
+        texture(shadowMap, fragPosLightSpace.xy + shadowInvResolution * seed.xy).r);
+    
+    //shadow = texture(shadowMap, fragPosLightSpace.xy).r;
+    
+    // Compute SSAO
+    
+    float bias = 0.025f;
+    float radius = 0.5f;
+    float turns = 7.0f;
+    float intensity = 0.15f;
+
+    vec3 norm = mat3(camView) * fragNormal;
+    vec3 base = CameraSpace(fragTexCoord, texture(gbufferDepth, fragTexCoord).r);
+    float occ = 0.0;
+    for (int i = 0; i < SSAO_SAMPLE_NUM; i++)
+    {
+        vec3 next = base + radius * vec3(Spiral(i, turns, seed.x), 0.0);
+        vec4 ntex = camProj * vec4(next, 1);
+        vec2 sampleTexCoord = (ntex.xy / ntex.w) * 0.5f + 0.5f;
+        vec3 actu = CameraSpace(sampleTexCoord, texture(gbufferDepth, sampleTexCoord).r);
+        vec3 diff = actu - base;
+        float vv = dot(diff, diff);
+        float vn = dot(diff, norm) - bias;
+        float f = max(radius*radius - vv, 0.0);
+        occ += f*f*f*max(vn / (0.001 + vv), 0.0);
+    }
+    occ = occ / pow(radius, 6.0);
+
+    float ssao = max(0.0, 1.0 - occ * intensity * (5.0 / float(SSAO_SAMPLE_NUM)));
+
+    finalColor.r = ssao;
+    finalColor.g = shadow;
+    finalColor.b = 0.0f;
+    finalColor.a = 1.0f;
+}
+
