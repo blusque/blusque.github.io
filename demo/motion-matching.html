@@ -2,46 +2,10 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Motion Matching · Jidong Mei</title>
-  <link rel="stylesheet" href="../assets/site.css" />
+  <title>Redirecting…</title>
+  <meta http-equiv="refresh" content="0; url=../project.html?id=motion-matching" />
+  <link rel="canonical" href="../project.html?id=motion-matching" />
+  <script>location.replace('../project.html?id=motion-matching' + location.hash);</script>
 </head>
-<body>
-  <header class="site-nav">
-    <a class="site-nav__brand" href="../index.html">← 主页</a>
-    <nav class="site-nav__links">
-      <a href="../demo.html" class="active">demo</a>
-      <a href="../story/index.html">相册</a>
-      <a href="../film.html">微电影</a>
-    </nav>
-  </header>
-
-  <main class="page demo-detail">
-    <p class="page__label">PROJECTS · demo</p>
-    <h1 class="page__title">Motion Matching</h1>
-
-    <div class="demo-detail__player">
-      <video controls playsinline preload="metadata">
-        <source src="motion-matching.mp4" type="video/mp4" />
-      </video>
-    </div>
-
-    <div class="page__body demo-detail__body">
-      <p class="lead">基于 Motion Matching 的实时动画生成，让角色在连续运球中自然切换动作。</p>
-
-      <h2>解决了什么技术问题</h2>
-      <ul>
-        <li><strong>模板切换扭动</strong> — 动作切换时角色躯干会出现瞬间扭动。通过候选入口评分（根相对手脚/肘/躯干位置、末端速度与双手相位）与缓变转向（最多 35°、24 帧），将切换窗口内的脊柱转角 95 分位从 <strong>3.58° 降到 2.54°</strong>，消除了切换瞬间的卡顿。</li>
-        <li><strong>实时性</strong> — CPU 工作线程异步生成下一段动画，主线程保持蒙皮、输入与渲染，实现可交互的实时播放。</li>
-      </ul>
-    </div>
-
-    <a class="demo-detail__back" href="../demo.html">← 返回 demo</a>
-  </main>
-
-  <footer class="site-foot">
-    <span>© 2026 Jidong Mei</span>
-    <a href="https://github.com/blusque">GitHub</a>
-  </footer>
-</body>
+<body style="background:#0b0b0c"></body>
 </html>
